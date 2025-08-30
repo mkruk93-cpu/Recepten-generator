@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekplanning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'slate': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        'gray': {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                        },
+                        'green': {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        'blue': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        'emerald': {
+                            600: '#059669',
+                            700: '#047857'
+                        },
+                        'purple': {
+                            50: '#faf5ff',
+                            700: '#6b21a8'
+                        },
+                        'teal': {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        'rose': {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            900: '#881337',
+                        },
+                        'orange': {
+                            100: '#fff7ed',
+                            700: '#c2410c'
+                        },
+                        'amber': {
+                            100: '#fef3c7',
+                            700: '#b45309'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-rose-50 font-sans text-gray-800">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { ChefHat, Settings, Plus, Minus, Calendar, Users, Clock, Star, Edit2, Share, Save, X, Check, Download, Upload, ShoppingBag, ArrowRight, Pizza, Sparkles } = {
+            ChefHat: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 3a3 3 0 0 0-3 3v2a3 3 0 0 1-3 3H3a3 3 0 0 0-3 3v2a3 3 0 0 0 3 3h18a3 3 0 0 0 3-3v-2a3 3 0 0 0-3-3h-3a3 3 0 0 1-3-3V6a3 3 0 0 0-3-3z" /></svg>,
+            Settings: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 0-2 0l-.15-.08a2 2 0 0 0-2.73 2.15l.25.43a2 2 0 0 1 0 2l-.25.43a2 2 0 0 0 0 2l.15.08a2 2 0 0 0 2.73 2.15l.43-.25a2 2 0 0 1 1-1.73V19a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 0 2 0l.15.08a2 2 0 0 0 2.73-2.15l-.25-.43a2 2 0 0 1 0-2l.25-.43a2 2 0 0 0 0-2l-.15-.08a2 2 0 0 0-2.73-2.15l-.43.25a2 2 0 0 1-1 1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>,
+            Plus: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14" /><path d="M12 5v14" /></svg>,
+            Minus: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14" /></svg>,
+            Calendar: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" /></svg>,
+            Users: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            Clock: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Star: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+            Edit2: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Share: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/></svg>,
+            Save: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>,
+            X: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Check: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>,
+            Download: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            Upload: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
+            ShoppingBag: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+            ArrowRight: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>,
+            Pizza: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 10.5C22 16.42 17.42 21 11.5 21S1 16.42 1 10.5 5.58 1 11.5 1 22 5.58 22 10.5z" /><path d="M16 16.5 11.5 21v-9.5H2" /><path d="M12.5 4.5h.01" /><path d="M17.5 7.5h.01" /></svg>,
+            Sparkles: ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z" /></svg>
+        };
+
+        const initialData = {
+          "recipes": [
+            { "id": 1, "name": "Penne met prei-baconroomsaus", "ingredients": ["bacon", "olijfolie", "prei", "penne", "Grana Padano", "groene pesto", "crème fraîche"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 2, "name": "Lasagne Bolognese", "ingredients": ["gehakt", "ui", "knoflook", "tomatenblokjes", "lasagnevellen", "bechamelsaus", "geraspte kaas"], "prepTime": "lang", "difficulty": "moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 3, "name": "Hartige taart met broccoli en spekjes", "ingredients": ["bladerdeeg", "broccoli", "ui", "eieren", "crème fraîche", "spekreepjes", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 4, "name": "Preischotel met aardappel", "ingredients": ["aardappels", "prei", "ui", "knoflook", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 5, "name": "Pizzakit pizza", "ingredients": ["pizzadeeg", "tomatensaus", "kaas", "diverse toppings"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": true, "cheatDay": true, "isFavorite": false, "category": "pizza", "carbType": "overig", "last_prepared_date": null },
+            { "id": 6, "name": "Ovenschotel met prei en kerrie", "ingredients": ["prei", "ui", "knoflook", "aardappelschijfjes", "gehakt", "kerriepoeder", "peterselie", "bloem", "boter", "melk", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 7, "name": "Aardappel ovenschotel met spek", "ingredients": ["aardappels", "spekreepjes", "ui", "geraspte kaas", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 8, "name": "Witlof ovenschotel met ham en kaas", "ingredients": ["witlof", "ham", "boter", "bloem", "melk", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 9, "name": "Bladerdeeg met gehakt en spitskool", "ingredients": ["bladerdeeg", "gehakt", "spitskool", "ui", "knoflook", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 10, "name": "Ovenschotel met gehakt en spinazie", "ingredients": ["gehakt", "ui", "knoflook", "spinazie", "aardappels", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 11, "name": "Kapsalon met rösti", "ingredients": ["rösti", "shoarma", "kaas", "salade", "knoflooksaus", "sambal"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": true, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 12, "name": "Wraps met gehakt uit de oven", "ingredients": ["wraps", "gehakt", "ui", "knoflook", "tomatensaus", "geraspte kaas", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 13, "name": "Bloemkool ovenschotel met ham", "ingredients": ["bloemkool", "ham", "ui", "geraspte kaas", "kruiden", "spekreepjes"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 14, "name": "Tacotaart", "ingredients": ["taco's", "gehakt", "ui", "knoflook", "tomatensaus", "geraspte kaas", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": true, "isFavorite": false, "category": "ovenschotel", "carbType": "overig", "last_prepared_date": null },
+            { "id": 15, "name": "Witlof ovenschotel met gehakt", "ingredients": ["witlof", "gehakt", "ui", "knoflook", "aardappels", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 16, "name": "Mexicaanse nachos", "ingredients": ["tortillachips", "tomaat", "crème fraîche", "geraspte kaas", "avocado", "citroensap"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": true, "cheatDay": true, "isFavorite": false, "category": "snacks", "carbType": "overig", "last_prepared_date": null },
+            { "id": 17, "name": "Röstiovenschotel met sperziebonen", "ingredients": ["ui", "paprika", "spekreepjes", "sperziebonen", "rösti", "crème fraîche", "geraspte kaas", "tijm"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 18, "name": "Italiaanse ovenschotel", "ingredients": ["lasagnebladen", "gehakt", "tomatensaus", "ui", "knoflook", "Italiaanse kruiden", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 19, "name": "Aardappel ovenschotel met broccoli", "ingredients": ["aardappelschijfjes", "broccoli", "ui", "crème fraîche", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "ovenschotel", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 20, "name": "Pastataart met ham", "ingredients": ["pasta", "eieren", "room", "hamblokjes", "geraspte kaas", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 21, "name": "Pasta met romige broccoli saus", "ingredients": ["pasta", "broccoli", "room", "kaas", "knoflook"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 22, "name": "Macaroni ovenschotel met gehakt", "ingredients": ["macaroni", "gehakt", "tomatensaus", "ui", "knoflook", "kruiden", "geraspte kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 23, "name": "Pasta carbonara", "ingredients": ["pasta", "spekjes", "eieren", "room", "geraspte kaas"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 24, "name": "Pasta met kaassaus en spinazie", "ingredients": ["pasta", "roomkaas", "spinazie", "knoflook"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 25, "name": "Spaghetti bolognesesaus met wortel", "ingredients": ["spaghetti", "gehakt", "wortel", "ui", "knoflook", "tomatensaus", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 26, "name": "Snelle pasta carbonara", "ingredients": ["pasta", "spekjes", "eieren", "room", "geraspte kaas"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 27, "name": "Pasta Alfredo met ham", "ingredients": ["pasta", "ham", "room", "boter", "Parmezaanse kaas", "knoflook"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 28, "name": "Pasta ovenschotel met prei", "ingredients": ["pasta", "prei", "ui", "knoflook", "geraspte kaas", "room", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 29, "name": "Macaroni ovenschotel met tomaat", "ingredients": ["macaroni", "tomaten", "ui", "knoflook", "geraspte kaas", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 30, "name": "Mac and cheese met spinazie", "ingredients": ["macaroni", "kaas", "melk", "boter", "bloem", "spinazie"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": true, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 31, "name": "Pasta met tomaten ricotta saus", "ingredients": ["pasta", "ricotta", "tomaten", "ui", "knoflook", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 32, "name": "Macaroni met gehakt", "ingredients": ["macaroni", "gehakt", "ui", "tomatensaus", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 33, "name": "Romige pasta met bloemkool", "ingredients": ["pasta", "bloemkool", "room", "geraspte kaas", "knoflook"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 34, "name": "Indische andijviestamppot", "ingredients": ["andijvie", "aardappels", "ui", "knoflook", "kerrie"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "stamppot", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 35, "name": "Snelle nasi", "ingredients": ["gekookte rijst", "ui", "knoflook", "ketjap manis", "rode peper", "nasi kruidenmix", "paprika", "courgette", "aubergine", "eieren", "satesaus"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 36, "name": "Snelle bami", "ingredients": ["mie", "knoflook", "gember", "rode peper", "nasi-bamigroente", "ketjap manis"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "noodles", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 37, "name": "Mexicaanse rijstschotel met gehakt", "ingredients": ["witte rijst", "zwarte bonen", "maïs", "gehakt", "chilikruidenmix", "tomatensalsa", "cheddar", "avocado", "zure room", "nacho chips", "peterselie"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": true, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 38, "name": "Risotto uit de oven", "ingredients": ["risottorijst", "groentebouillon", "ui", "knoflook", "doperwten", "spinazie", "Parmezaanse kaas"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 39, "name": "Spitskool met rijst en varkenssaté", "ingredients": ["spitskool", "rijst", "varkenssaté", "sojasaus", "knoflook", "gember", "sesamolie", "chili"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 40, "name": "Boerenkoolstamppot met balletjes", "ingredients": ["kruimige aardappelen", "boerenkool", "gehakt", "ui", "bouillon", "boter", "melk", "nootmuskaat"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "stamppot", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 41, "name": "Andijviestamppot met spekjes", "ingredients": ["aardappelen", "andijvie", "spekjes", "ui", "melk", "boter"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "stamppot", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 42, "name": "Pannenkoeken", "ingredients": ["bloem", "eieren", "melk", "boter", "spek", "appel", "rozijnen", "kaas", "stroop", "poedersuiker"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": true, "cheatDay": true, "isFavorite": false, "category": "overig", "carbType": "overig", "last_prepared_date": null },
+            { "id": 43, "name": "Aardappel-prei soep", "ingredients": ["aardappelen", "prei", "ui", "knoflook", "groentebouillon", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "soep", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 44, "name": "Spitskool soep", "ingredients": ["spitskool", "ui", "knoflook", "aardappelen", "groentebouillon", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "soep", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 45, "name": "Romige bloemkoolsoep", "ingredients": ["bloemkool", "ui", "knoflook", "aardappelen", "groentebouillon", "room", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "soep", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 46, "name": "Broccolisoep", "ingredients": ["broccoli", "ui", "knoflook", "aardappelen", "groentebouillon", "room", "kruiden"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "soep", "carbType": "aardappel", "last_prepared_date": null },
+            { "id": 47, "name": "Lasagne uit de pan met spinazie", "ingredients": ["lasagnebladen", "gehakt", "ui", "knoflook", "tomatensaus", "spinazie", "bechamelsaus", "geraspte kaas"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "pasta", "carbType": "pasta", "last_prepared_date": null },
+            { "id": 48, "name": "Chili con carne", "ingredients": ["gehakt", "ui", "knoflook", "paprika", "tomatenblokjes", "kidneybonen", "mais", "chilipeper", "komijn", "paprikapoeder"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "stoofpot", "carbType": "overig", "last_prepared_date": null },
+            { "id": 49, "name": "Mexicaanse eenpansgerecht met rijst", "ingredients": ["rijst", "gehakt", "ui", "knoflook", "paprika", "tomatenblokjes", "maïs", "zwarte bonen", "taco kruidenmix", "kaas", "zure room"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 50, "name": "Vegetarische bloemkool curry", "ingredients": ["bloemkool", "ui", "knoflook", "gember", "kokosmelk", "currypasta", "spinazie", "rijst"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": false, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "curry", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 51, "name": "Couscous met boontjes", "ingredients": ["couscous", "sperziebonen", "ui", "knoflook", "tomaat", "komijn", "koriander", "olijfolie"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "couscous", "carbType": "overig", "last_prepared_date": null },
+            { "id": 52, "name": "Risotto met ham", "ingredients": ["risottorijst", "hamblokjes", "ui", "knoflook", "witte wijn", "groentebouillon", "Parmezaanse kaas", "boter", "olijfolie"], "prepTime": "kort", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": false, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null },
+            { "id": 53, "name": "Rijst ovenschotel met gehakt en prei", "ingredients": ["rijst", "gehakt", "prei", "ui", "knoflook", "tomatensaus", "geraspte kaas", "kruiden"], "prepTime": "lang", "difficulty": "niet-moeilijk", "kidFriendly": true, "makeAhead": true, "guestsFriendly": false, "cheatDay": false, "isFavorite": false, "category": "rijst", "carbType": "rijst", "last_prepared_date": null }
+          ],
+          "settings": {
+            "saleIngredientsPart1": [],
+            "saleIngredientsPart2": [],
+            "avoidIngredients": ["kip", "vis", "champignons"],
+            "kidsEatDays": ["dinsdag", "donderdag", "vrijdag", "zaterdag", "zondag"],
+            "dayPreferences": {
+              "maandag": "kort",
+              "dinsdag": "maakt-niet-uit",
+              "woensdag": "kort",
+              "donderdag": "maakt-niet-uit",
+              "vrijdag": "maakt-niet-uit",
+              "zaterdag": "maakt-niet-uit",
+              "zondag": "maakt-niet-uit"
+            },
+            "cheatDayDays": [],
+            "newRecipeDays": [],
+            "favoriteBonus": 5,
+            "startDayOfWeek": "maandag",
+            "saleSplitDay": "woensdag",
+            "seasonalToggle": false
+          }
+        };
+
+        const LOCAL_STORAGE_KEY = 'weekPlanningData';
+        const LOCAL_STORAGE_NEW_RECIPES_KEY = 'newRecipesData';
+        const LOCAL_STORAGE_HISTORY_KEY = 'recipeHistory';
+
+        const days = ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag'];
+        const commonIngredients = ['zout', 'peper', 'olie', 'olijfolie', 'kruiden', 'knoflook', 'ui', 'boter'];
+        
+        // Define seasonal ingredients for each season in Dutch
+        const seasonalIngredients = {
+            'lente': ['wortel', 'spinazie', 'prei', 'radijs', 'bloemkool', 'witlof', 'broccoli', 'raapjes'],
+            'zomer': ['tomaat', 'paprika', 'courgette', 'aubergine', 'boontjes', 'maïs', 'komkommer', 'aardbeien', 'kersen'],
+            'herfst': ['pompoen', 'paddenstoelen', 'spruitjes', 'boerenkool', 'pastinaak', 'knolselderij', 'wortel', 'appel', 'peer'],
+            'winter': ['boerenkool', 'spruitjes', 'prei', 'wortel', 'witlof', 'raapjes', 'pastinaak', 'pompoen']
+        };
+
+        const getSeason = () => {
+            const month = new Date().getMonth() + 1; // getMonth() is 0-indexed
+            if (month >= 3 && month <= 5) return 'lente';
+            if (month >= 6 && month <= 8) return 'zomer';
+            if (month >= 9 && month <= 11) return 'herfst';
+            return 'winter';
+        };
+
+        const getOrderedDays = (startDay) => {
+            const startIndex = days.indexOf(startDay.toLowerCase());
+            if (startIndex === -1) return days;
+            return [...days.slice(startIndex), ...days.slice(0, startIndex)];
+        };
+
+        const loadData = () => {
+            try {
+                const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    const updatedRecipes = parsedData.recipes.map(recipe => ({
+                        ...recipe,
+                        guestsFriendly: recipe.guestsFriendly !== undefined ? recipe.guestsFriendly : false,
+                        cheatDay: recipe.cheatDay !== undefined ? recipe.cheatDay : false,
+                        isFavorite: recipe.isFavorite !== undefined ? recipe.isFavorite : false,
+                        last_prepared_date: recipe.last_prepared_date !== undefined ? recipe.last_prepared_date : null
+                    }));
+                    const updatedSettings = {
+                        ...parsedData.settings,
+                        saleIngredientsPart1: parsedData.settings.saleIngredientsPart1 || [],
+                        saleIngredientsPart2: parsedData.settings.saleIngredientsPart2 || [],
+                        cheatDayDays: parsedData.settings.cheatDayDays || [],
+                        newRecipeDays: parsedData.settings.newRecipeDays || [],
+                        favoriteBonus: parsedData.settings.favoriteBonus !== undefined ? parsedData.settings.favoriteBonus : 5,
+                        startDayOfWeek: parsedData.settings.startDayOfWeek || 'maandag',
+                        saleSplitDay: parsedData.settings.saleSplitDay || 'woensdag',
+                        seasonalToggle: parsedData.settings.seasonalToggle !== undefined ? parsedData.settings.seasonalToggle : false
+                    };
+                    return { ...parsedData, recipes: updatedRecipes, settings: updatedSettings };
+                }
+            } catch (error) {
+                console.error("Failed to load data from localStorage", error);
+            }
+            return initialData;
+        };
+
+        const loadNewRecipes = () => {
+            try {
+                const storedRecipes = localStorage.getItem(LOCAL_STORAGE_NEW_RECIPES_KEY);
+                return storedRecipes ? JSON.parse(storedRecipes).map(recipe => ({
+                    ...recipe,
+                    guestsFriendly: recipe.guestsFriendly !== undefined ? recipe.guestsFriendly : false,
+                    cheatDay: recipe.cheatDay !== undefined ? recipe.cheatDay : false,
+                    isFavorite: recipe.isFavorite !== undefined ? recipe.isFavorite : false,
+                    last_prepared_date: recipe.last_prepared_date !== undefined ? recipe.last_prepared_date : null
+                })) : [];
+            } catch (error) {
+                console.error("Failed to load new recipes from localStorage", error);
+                return [];
+            }
+        };
+
+        const loadHistory = () => {
+            try {
+                const storedHistory = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+                const history = storedHistory ? JSON.parse(storedHistory) : [];
+                return history.filter(item => {
+                    const date = new Date(item.date);
+                    const twoWeeksAgo = new Date();
+                    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                    return date > twoWeeksAgo;
+                });
+            } catch (error) {
+                console.error("Failed to load history from localStorage", error);
+                return [];
+            }
+        };
+
+        const saveData = (data) => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.error("Failed to save data to localStorage", error);
+            }
+        };
+
+        const saveNewRecipes = (recipes) => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_NEW_RECIPES_KEY, JSON.stringify(recipes));
+            } catch (error) {
+                console.error("Failed to save new recipes to localStorage", error);
+            }
+        };
+
+        const saveHistory = (history) => {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(history));
+            } catch (error) {
+                console.error("Failed to save history to localStorage", error);
+            }
+        };
+        
+        const WeekPlanningApp = () => {
+            const [data, setData] = useState(loadData);
+            const [newRecipes, setNewRecipes] = useState(loadNewRecipes);
+            const [history, setHistory] = useState(loadHistory);
+            const [weekPlan, setWeekPlan] = useState({
+                maandag: null,
+                dinsdag: null,
+                woensdag: null,
+                donderdag: null,
+                vrijdag: null,
+                zaterdag: null,
+                zondag: null
+            });
+            const [daySpecificSettings, setDaySpecificSettings] = useState({
+                maandag: { guests: false },
+                dinsdag: { guests: false },
+                woensdag: { guests: false },
+                donderdag: { guests: false },
+                vrijdag: { guests: false },
+                zaterdag: { guests: false },
+                zondag: { guests: false }
+            });
+            
+            const [showSettings, setShowSettings] = useState(false);
+            const [showRecipeManager, setShowRecipeManager] = useState(false);
+            const [showLegend, setShowLegend] = useState(false);
+            const [editingRecipe, setEditingRecipe] = useState(null);
+            const [newSaleIngredient, setNewSaleIngredient] = useState('');
+            const [newAvoidIngredient, setNewAvoidIngredient] = useState('');
+            const [showShoppingList, setShowShoppingList] = useState(false);
+            const [showHistory, setShowHistory] = useState(false);
+            
+            const orderedDays = getOrderedDays(data.settings.startDayOfWeek);
+
+            useEffect(() => {
+                saveData(data);
+            }, [data]);
+            
+            useEffect(() => {
+                saveNewRecipes(newRecipes);
+            }, [newRecipes]);
+
+            useEffect(() => {
+                saveHistory(history);
+            }, [history]);
+            
+            const allRecipes = [...data.recipes, ...newRecipes];
+            const categories = [...new Set(allRecipes.map(r => r.category))].sort();
+            const carbTypes = [...new Set(allRecipes.map(r => r.carbType))].sort();
+
+            const getSharedIngredients = (recipe1, recipe2) => {
+                const ingredients1 = recipe1.ingredients.filter(ing => !commonIngredients.includes(ing.toLowerCase()));
+                const ingredients2 = recipe2.ingredients.filter(ing => !commonIngredients.includes(ing.toLowerCase()));
+                return ingredients1.filter(ing => ingredients2.some(ing2 => ing2.toLowerCase() === ing.toLowerCase()));
+            };
+
+            const calculateRecipeScore = (recipe, day, currentPlan) => {
+                let score = Math.random() * 10;
+                
+                const saleSplitIndex = orderedDays.indexOf(data.settings.saleSplitDay.toLowerCase());
+                const dayIndex = orderedDays.indexOf(day.toLowerCase());
+                const saleIngredients = dayIndex < saleSplitIndex ? data.settings.saleIngredientsPart1 : data.settings.saleIngredientsPart2;
+
+                const hasSaleIngredient = recipe.ingredients.some(ingredient => saleIngredients.includes(ingredient.toLowerCase()));
+                if (hasSaleIngredient) score += 5;
+
+                // New: Seasonal toggle bonus
+                if (data.settings.seasonalToggle) {
+                    const currentSeason = getSeason();
+                    const seasonIngredients = seasonalIngredients[currentSeason] || [];
+                    const hasSeasonalIngredient = recipe.ingredients.some(ingredient => seasonIngredients.includes(ingredient.toLowerCase()));
+                    if (hasSeasonalIngredient) {
+                        score += 4;
+                    }
+                }
+
+                // New: Personalized suggestions based on recent cooking
+                const recentCategories = history.map(h => h.category);
+                const categoryCount = {};
+                recentCategories.forEach(cat => {
+                    categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+                });
+                
+                if (categoryCount[recipe.category] > 2) {
+                    score -= 5;
+                }
+                if (categoryCount[recipe.category] > 5) {
+                    score -= 10;
+                }
+
+                const dayPref = data.settings.dayPreferences[day];
+                if (dayPref === 'kort' && recipe.prepTime === 'kort') score += 3;
+                if (dayPref === 'kort' && recipe.prepTime === 'lang') score -= 2;
+                if (dayPref === 'lang' && recipe.prepTime === 'lang') score += 2;
+
+                const kidsEat = data.settings.kidsEatDays.includes(day);
+                if (kidsEat && recipe.kidFriendly) score += 2;
+                if (kidsEat && !recipe.kidFriendly) score -= 5;
+                if (!kidsEat && !recipe.kidFriendly) score += 1;
+
+                const hasAvoidIngredient = recipe.ingredients.some(ingredient => data.settings.avoidIngredients.includes(ingredient.toLowerCase()));
+                if (hasAvoidIngredient) score -= 20;
+
+                const isCheatDay = data.settings.cheatDayDays.includes(day);
+                if (isCheatDay && recipe.cheatDay) score += 5;
+                if (!isCheatDay && recipe.cheatDay) score -= 10;
+                
+                const isNewRecipeDay = data.settings.newRecipeDays.includes(day);
+                if (isNewRecipeDay && newRecipes.some(r => r.id === recipe.id)) score += 15;
+                if (isNewRecipeDay && !newRecipes.some(r => r.id === recipe.id)) score -= 10;
+                if (!isNewRecipeDay && newRecipes.some(r => r.id === r.id)) score -= 15;
+
+                if (recipe.isFavorite) score += data.settings.favoriteBonus;
+
+                const guestsExpected = daySpecificSettings[day]?.guests;
+                if (guestsExpected && recipe.guestsFriendly) score += 3;
+                if (guestsExpected && !recipe.guestsFriendly) score -= 5;
+                if (!guestsExpected && recipe.guestsFriendly) score += 1;
+                
+                const plannedRecipes = Object.values(currentPlan).filter(r => r !== null);
+                let sharedIngredientsBonus = 0;
+                let sharedIngredientsCount = 0;
+                plannedRecipes.forEach(plannedRecipe => {
+                    const shared = getSharedIngredients(recipe, plannedRecipe);
+                    if (shared.length > 0) {
+                        sharedIngredientsBonus += shared.length * 0.5;
+                        sharedIngredientsCount++;
+                    }
+                });
+                if (sharedIngredientsCount <= 2) {
+                    score += sharedIngredientsBonus;
+                } else {
+                    score -= 1;
+                }
+
+                const carbCounts = {};
+                plannedRecipes.forEach(plannedRecipe => {
+                    carbCounts[plannedRecipe.carbType] = (carbCounts[plannedRecipe.carbType] || 0) + 1;
+                });
+                if (carbCounts[recipe.carbType] >= 3) {
+                    score -= 5;
+                } else if (carbCounts[recipe.carbType] === 2) {
+                    score -= 3;
+                }
+                
+                // New: Reduce score for recently prepared dishes
+                if (recipe.last_prepared_date) {
+                    const lastPrepDate = new Date(recipe.last_prepared_date);
+                    const today = new Date();
+                    const diffTime = Math.abs(today - lastPrepDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays < 7) { 
+                        score -= 50;
+                    } else if (diffDays < 30) { 
+                        score -= 20;
+                    } else if (diffDays < 90) { 
+                        score -= 5;
+                    } else { 
+                        score += 3;
+                    }
+                }
+                return score;
+            };
+
+            const generateWeekPlan = () => {
+                const newPlan = {};
+                const usedRecipes = new Set();
+                
+                orderedDays.forEach(day => {
+                    const isCheatDay = data.settings.cheatDayDays.includes(day);
+                    const isNewRecipeDay = data.settings.newRecipeDays.includes(day);
+                    const guestsExpected = daySpecificSettings[day]?.guests;
+
+                    let recipesForThisDay = allRecipes;
+                    
+                    if (isNewRecipeDay) {
+                        recipesForThisDay = recipesForThisDay.filter(r => newRecipes.some(nr => nr.id === r.id));
+                    }
+                    if (isCheatDay) {
+                        recipesForThisDay = recipesForThisDay.filter(r => r.cheatDay);
+                    } else {
+                        recipesForThisDay = recipesForThisDay.filter(r => !r.cheatDay);
+                    }
+                    if (guestsExpected) {
+                        recipesForThisDay = recipesForThisDay.filter(r => r.guestsFriendly);
+                    }
+                    
+                    const filteredRecipes = recipesForThisDay.filter(recipe => {
+                        const hasAvoidIngredient = recipe.ingredients.some(ingredient => data.settings.avoidIngredients.includes(ingredient.toLowerCase()));
+                        return !hasAvoidIngredient && !usedRecipes.has(recipe.id);
+                    });
+
+                    if (filteredRecipes.length > 0) {
+                        const recipesWithScores = filteredRecipes.map(recipe => ({
+                            ...recipe,
+                            score: calculateRecipeScore(recipe, day, newPlan)
+                        }));
+                        recipesWithScores.sort((a, b) => b.score - a.score);
+                        const selectedRecipe = recipesWithScores[0];
+                        newPlan[day] = selectedRecipe;
+                        usedRecipes.add(selectedRecipe.id);
+                    } else {
+                         newPlan[day] = null;
+                    }
+                });
+                setWeekPlan(newPlan);
+            };
+
+
+            const finalizeWeekPlan = () => {
+                const today = new Date().toISOString().split('T')[0];
+                const updatedHistory = [...history];
+
+                const updateRecipeLastPrepared = (recipes, isNew) => {
+                    return recipes.map(recipe => {
+                        if (Object.values(weekPlan).some(plannedRecipe => plannedRecipe && plannedRecipe.id === recipe.id)) {
+                            const newDate = today;
+                            updatedHistory.unshift({
+                                id: recipe.id,
+                                name: recipe.name,
+                                date: newDate,
+                                isNew: isNew,
+                                category: recipe.category
+                            });
+                            return { ...recipe, last_prepared_date: newDate };
+                        }
+                        return recipe;
+                    });
+                };
+            
+                const updatedMainRecipes = updateRecipeLastPrepared(data.recipes, false);
+                const updatedNewRecipes = updateRecipeLastPrepared(newRecipes, true);
+                
+                // Keep history trimmed to the last 14 days
+                const twoWeeksAgo = new Date();
+                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                const trimmedHistory = updatedHistory.filter(item => new Date(item.date) > twoWeeksAgo);
+
+                setData(prev => ({ ...prev, recipes: updatedMainRecipes }));
+                setNewRecipes(updatedNewRecipes);
+                setHistory(trimmedHistory);
+
+                alert('De weekplanning is definitief gemaakt en de bereidingsdata zijn bijgewerkt!');
+            };
+
+
+            const getShoppingList = () => {
+                const allIngredients = {};
+                Object.values(weekPlan).forEach(recipe => {
+                    if (recipe) {
+                        recipe.ingredients.forEach(ingredient => {
+                            if (!commonIngredients.includes(ingredient.toLowerCase())) {
+                                allIngredients[ingredient] = (allIngredients[ingredient] || 0) + 1;
+                            }
+                        });
+                    }
+                });
+                return allIngredients;
+            };
+            
+            const shareWeekPlan = () => {
+                let message = "🍽️ *Weekplanning* 🍽️%0A%0A";
+                orderedDays.forEach(day => {
+                    const recipe = weekPlan[day];
+                    if (recipe) {
+                        message += `*${day.charAt(0).toUpperCase() + day.slice(1)}*: ${recipe.name}%0A`;
+                        if (!data.settings.kidsEatDays.includes(day)) {
+                            message += "   ↳ Kinderen eten niet mee%0A";
+                        }
+                        if (daySpecificSettings[day]?.guests) {
+                            message += "   ↳ Geschikt voor gasten%0A";
+                        }
+                        if (data.settings.cheatDayDays.includes(day)) {
+                            message += "   ↳ Cheat day!%0A";
+                        }
+                        if (data.settings.newRecipeDays.includes(day)) {
+                            message += "   ↳ Nieuw recept!%0A";
+                        }
+                        if (recipe.isFavorite) {
+                            message += "   ↳ Favoriet! ❤️%0A";
+                        }
+                        if (recipe.url) {
+                            message += `   ↳ Link: ${recipe.url}%0A`;
+                        }
+                    }
+                });
+                const whatsappUrl = `https://wa.me/?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            };
+
+            const editRecipe = (recipe) => {
+                setEditingRecipe({ ...recipe });
+            };
+
+            const saveRecipe = () => {
+                if (editingRecipe) {
+                    const isNewRecipe = newRecipes.some(r => r.id === editingRecipe.id);
+                    if (isNewRecipe) {
+                        setNewRecipes(prev => prev.map(r => r.id === editingRecipe.id ? editingRecipe : r));
+                    } else {
+                        setData(prev => ({
+                            ...prev,
+                            recipes: prev.recipes.map(r => r.id === editingRecipe.id ? editingRecipe : r)
+                        }));
+                    }
+                    setEditingRecipe(null);
+                }
+            };
+
+            const createNewRecipe = () => {
+                const newRecipe = {
+                    id: Math.max(...allRecipes.map(r => r.id)) + 1,
+                    name: '',
+                    ingredients: [],
+                    prepTime: 'kort',
+                    difficulty: 'niet-moeilijk',
+                    kidFriendly: true,
+                    makeAhead: false,
+                    guestsFriendly: false,
+                    cheatDay: false,
+                    isFavorite: false,
+                    category: 'overig',
+                    carbType: 'overig',
+                    last_prepared_date: null
+                };
+                setEditingRecipe(newRecipe);
+                setShowRecipeManager(false);
+            };
+
+            const saveNewRecipe = () => {
+                if (editingRecipe && editingRecipe.name.trim() && editingRecipe.ingredients.length > 0) {
+                    setNewRecipes(prev => [...prev, editingRecipe]);
+                    setEditingRecipe(null);
+                    setShowRecipeManager(true);
+                } else {
+                    alert('Vul minimaal een naam en één ingrediënt in.');
+                }
+            };
+            
+            const deleteRecipe = (id, isNew) => {
+                if (window.confirm("Weet je zeker dat je dit recept wilt verwijderen?")) {
+                    if (isNew) {
+                        setNewRecipes(prev => prev.filter(r => r.id !== id));
+                    } else {
+                        setData(prev => ({
+                            ...prev,
+                            recipes: prev.recipes.filter(r => r.id !== id)
+                        }));
+                    }
+                }
+            };
+            
+            const toggleFavorite = (id, isNew) => {
+                const updater = (prev) => {
+                    return prev.map(r => r.id === id ? { ...r, isFavorite: !r.isFavorite } : r);
+                };
+                if (isNew) {
+                    setNewRecipes(updater);
+                } else {
+                    setData(prev => ({ ...prev, recipes: updater(prev.recipes) }));
+                }
+            };
+
+            const moveNewRecipeToMain = (recipeToMove) => {
+                if (window.confirm("Weet je zeker dat je dit recept wilt verplaatsen naar je standaard recepten?")) {
+                    const newId = Math.max(...data.recipes.map(r => r.id), ...newRecipes.map(r => r.id), 0) + 1;
+                    const updatedRecipe = { ...recipeToMove, id: newId };
+                    setData(prev => ({
+                        ...prev,
+                        recipes: [...prev.recipes, updatedRecipe]
+                    }));
+                    setNewRecipes(prev => prev.filter(r => r.id !== recipeToMove.id));
+                }
+            };
+
+            const addIngredientToRecipe = (ingredient) => {
+                if (editingRecipe && ingredient.trim()) {
+                    setEditingRecipe(prev => ({
+                        ...prev,
+                        ingredients: [...prev.ingredients, ingredient.trim()]
+                    }));
+                }
+            };
+
+            const removeIngredientFromRecipe = (index) => {
+                if (editingRecipe) {
+                    setEditingRecipe(prev => ({
+                        ...prev,
+                        ingredients: prev.ingredients.filter((_, i) => i !== index)
+                    }));
+                }
+            };
+
+            const getDifficultyDisplay = (difficulty) => {
+                return difficulty === 'moeilijk' ? '★★★' : '★★☆';
+            };
+
+            const getTimeDisplay = (prepTime) => {
+                if (prepTime === 'kort') return '⏱️ Kort';
+                if (prepTime === 'lang') return '⏰ Lang';
+                return '⏲️ Maakt niet uit';
+            };
+
+            const handleToggleGuests = (day) => {
+                setDaySpecificSettings(prev => ({
+                    ...prev,
+                    [day]: { ...prev[day], guests: !prev[day].guests }
+                }));
+            };
+
+            const handleToggleCheatDay = (day) => {
+                 setData(prev => {
+                    const cheatDayDays = prev.settings.cheatDayDays.includes(day)
+                        ? prev.settings.cheatDayDays.filter(d => d !== day)
+                        : [...prev.settings.cheatDayDays, day];
+                    return { ...prev, settings: { ...prev.settings, cheatDayDays } };
+                });
+            };
+
+            const handleToggleNewRecipeDay = (day) => {
+                setData(prev => {
+                    const newRecipeDays = prev.settings.newRecipeDays.includes(day)
+                        ? prev.settings.newRecipeDays.filter(d => d !== day)
+                        : [...prev.settings.newRecipeDays, day];
+                    return { ...prev, settings: { ...prev.settings, newRecipeDays } };
+                });
+            };
+
+            const exportData = () => {
+                const dataToExport = {
+                    recipes: data.recipes,
+                    newRecipes: newRecipes,
+                    settings: data.settings,
+                    history: history,
+                    exportDate: new Date().toISOString(),
+                    version: '3.0'
+                };
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `weekplanning-export-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            const importData = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (importedData.recipes && importedData.settings) {
+                            setData({ recipes: importedData.recipes, settings: importedData.settings });
+                            setNewRecipes(importedData.newRecipes || []);
+                            setHistory(importedData.history || []);
+                            alert('Import succesvol! Je recepten en instellingen zijn bijgewerkt.');
+                        } else {
+                            throw new Error('Invalid file format');
+                        }
+                    } catch (error) {
+                        alert('Fout bij het importeren. Controleer of het bestand geldig is.');
+                        console.error('Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+            
+            const importNewRecipes = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData.recipes)) {
+                            const maxId = allRecipes.length > 0 ? Math.max(...allRecipes.map(r => r.id)) : 0;
+                            const recipesWithNewIds = importedData.recipes.map((recipe, index) => ({
+                                ...recipe,
+                                id: maxId + index + 1
+                            }));
+                            setNewRecipes(prev => [...prev, ...recipesWithNewIds]);
+                            alert(`Import succesvol! ${recipesWithNewIds.length} nieuwe recepten toegevoegd.`);
+                        } else {
+                            throw new Error('Ongeldig bestandsformaat. Het bestand moet een "recipes" array bevatten.');
+                        }
+                    } catch (error) {
+                        alert('Fout bij het importeren van nieuwe recepten. Controleer of het bestand geldig is.');
+                        console.error('Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+            
+            const groupRecipesByCategory = (recipes) => {
+                const grouped = {};
+                const sortedRecipes = [...recipes].sort((a, b) => a.name.localeCompare(b.name));
+                sortedRecipes.forEach(recipe => {
+                    if (!grouped[recipe.category]) {
+                        grouped[recipe.category] = [];
+                    }
+                    grouped[recipe.category].push(recipe);
+                });
+                return grouped;
+            };
+
+            const groupedAllRecipes = groupRecipesByCategory(allRecipes);
+            const groupedMainRecipes = groupRecipesByCategory(data.recipes);
+            const groupedNewRecipes = groupRecipesByCategory(newRecipes);
+
+            const getFormattedDate = (dateString) => {
+                if (!dateString) return null;
+                const date = new Date(dateString);
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return date.toLocaleDateString('nl-NL', options);
+            };
+            
+            const sortRecipes = (recipes, sortBy) => {
+                switch (sortBy) {
+                    case 'recent-gegeten':
+                        return [...recipes].sort((a, b) => {
+                            const dateA = a.last_prepared_date ? new Date(a.last_prepared_date) : new Date(0);
+                            const dateB = b.last_prepared_date ? new Date(b.last_prepared_date) : new Date(0);
+                            return dateB - dateA;
+                        });
+                    case 'kort':
+                        return [...recipes].filter(r => r.prepTime === 'kort').sort((a, b) => a.name.localeCompare(b.name));
+                    case 'lang':
+                        return [...recipes].filter(r => r.prepTime === 'lang').sort((a, b) => a.name.localeCompare(b.name));
+                    case 'bestaand':
+                         return [...recipes].filter(r => !newRecipes.some(nr => nr.id === r.id)).sort((a, b) => a.name.localeCompare(b.name));
+                    case 'nieuw':
+                         return [...recipes].filter(r => newRecipes.some(nr => nr.id === r.id)).sort((a, b) => a.name.localeCompare(b.name));
+                    case 'favoriet':
+                         return [...recipes].filter(r => r.isFavorite).sort((a, b) => a.name.localeCompare(b.name));
+                    case 'ovenschotel':
+                    case 'pasta':
+                    case 'stamppot':
+                    case 'rijst':
+                    case 'soep':
+                    case 'pizza':
+                    case 'snacks':
+                    case 'noodles':
+                    case 'stoofpot':
+                    case 'curry':
+                    case 'couscous':
+                    case 'overig':
+                        return [...recipes].filter(r => r.category === sortBy).sort((a, b) => a.name.localeCompare(b.name));
+                    default:
+                        return [...recipes].sort((a, b) => a.name.localeCompare(b.name));
+                }
+            };
+            
+            const legendItems = [
+                { icon: '❤️', label: 'Favoriet' },
+                { icon: '✨', label: 'Nieuw recept' },
+                { icon: '🍕', label: 'Cheat day' },
+                { icon: '👥', label: 'Geschikt voor gasten' },
+                { icon: '👶', label: 'Kindvriendelijk' },
+                { icon: '📅', label: 'Van tevoren te maken' },
+                { icon: '⏱️', label: 'Korte bereidingstijd' },
+                { icon: '⏰', label: 'Lange bereidingstijd' },
+                { color: 'text-teal-600', label: 'Ingrediënt in de aanbieding' },
+                { color: 'text-blue-600', label: 'Seizoensgebonden ingrediënt' },
+                { icon: '★★★', label: 'Moeilijk' },
+                { icon: '★★☆', label: 'Niet moeilijk' }
+            ];
+
+            return (
+                <div className="max-w-4xl mx-auto p-4 bg-white min-h-screen shadow-lg">
+                    <div className="bg-white rounded-xl p-6">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center">
+                                    <ChefHat className="h-5 w-5 text-rose-600" />
+                                </div>
+                                <h1 className="text-2xl font-semibold text-gray-900">Weekplanning</h1>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowShoppingList(!showShoppingList)}
+                                    className="p-2 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors border border-teal-200"
+                                    title="Boodschappenlijst"
+                                >
+                                    <ShoppingBag className="h-4 w-4 text-teal-600" />
+                                </button>
+                                <button
+                                    onClick={() => setShowHistory(!showHistory)}
+                                    className="p-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                                    title="Visuele Geschiedenis"
+                                >
+                                    <Clock className="h-4 w-4 text-blue-600" />
+                                </button>
+                                <button
+                                    onClick={() => setShowRecipeManager(!showRecipeManager)}
+                                    className={`p-2 rounded-lg transition-colors border border-rose-200 ${showRecipeManager ? 'bg-rose-100 ring-2 ring-rose-300' : 'bg-rose-50 hover:bg-rose-100'}`}
+                                    title="Beheer recepten"
+                                >
+                                    <Edit2 className="h-4 w-4 text-rose-600" />
+                                </button>
+                                <button
+                                    onClick={() => setShowSettings(!showSettings)}
+                                    className={`p-2 rounded-lg transition-colors border border-rose-200 ${showSettings ? 'bg-rose-100 ring-2 ring-rose-300' : 'bg-rose-50 hover:bg-rose-100'}`}
+                                    title="Instellingen"
+                                >
+                                    <Settings className="h-4 w-4 text-rose-600" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <button
+                                onClick={() => setShowLegend(!showLegend)}
+                                className="flex items-center gap-2 p-2 bg-gray-100 rounded-md text-sm text-gray-600 hover:bg-gray-200 transition-colors"
+                            >
+                                <span>{showLegend ? 'Legenda verbergen' : 'Toon Legenda'}</span>
+                                <span className={`transform transition-transform ${showLegend ? 'rotate-90' : ''}`}>
+                                    <ArrowRight className="h-3 w-3" />
+                                </span>
+                            </button>
+                            {showLegend && (
+                                <div className="p-4 mt-2 bg-gray-50 rounded-md border border-gray-200 text-sm">
+                                    <h4 className="font-semibold mb-2">Uitleg symbolen en kleuren:</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {legendItems.map((item, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                {item.icon && <span className="text-gray-600">{item.icon}</span>}
+                                                {item.color && <div className={`w-3 h-3 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>}
+                                                <span className="text-gray-800">{item.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {showSettings && (
+                            <div className="mb-6 p-6 bg-rose-50 rounded-xl border border-gray-100">
+                                <h3 className="text-lg font-semibold mb-6 text-gray-900">Instellingen</h3>
+                                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                    <div className="col-span-full md:col-span-1">
+                                        <h4 className="font-medium mb-2">Aanbiedings-ingrediënten weekdeel 1:</h4>
+                                        <div className="flex gap-2 mb-2">
+                                            <input
+                                                type="text"
+                                                value={newSaleIngredient}
+                                                onChange={(e) => setNewSaleIngredient(e.target.value)}
+                                                placeholder="Bijv. gehakt, broccoli"
+                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                                onKeyPress={(e) => e.key === 'Enter' && (() => {
+                                                    if (newSaleIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart1: [...prev.settings.saleIngredientsPart1, newSaleIngredient.trim().toLowerCase()] } }));
+                                                        setNewSaleIngredient('');
+                                                    }
+                                                })()}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    if (newSaleIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart1: [...prev.settings.saleIngredientsPart1, newSaleIngredient.trim().toLowerCase()] } }));
+                                                        setNewSaleIngredient('');
+                                                    }
+                                                }}
+                                                className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {data.settings.saleIngredientsPart1.map((ingredient, index) => (
+                                                <span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-800 rounded-full text-xs">
+                                                    {ingredient}
+                                                    <button
+                                                        onClick={() => setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart1: prev.settings.saleIngredientsPart1.filter((_, i) => i !== index) } }))}
+                                                        className="hover:text-rose-600"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                     <div className="col-span-full md:col-span-1">
+                                        <h4 className="font-medium mb-2">Aanbiedings-ingrediënten weekdeel 2:</h4>
+                                        <div className="flex gap-2 mb-2">
+                                            <input
+                                                type="text"
+                                                value={newSaleIngredient}
+                                                onChange={(e) => setNewSaleIngredient(e.target.value)}
+                                                placeholder="Bijv. gehakt, broccoli"
+                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                                onKeyPress={(e) => e.key === 'Enter' && (() => {
+                                                    if (newSaleIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart2: [...prev.settings.saleIngredientsPart2, newSaleIngredient.trim().toLowerCase()] } }));
+                                                        setNewSaleIngredient('');
+                                                    }
+                                                })()}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    if (newSaleIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart2: [...prev.settings.saleIngredientsPart2, newSaleIngredient.trim().toLowerCase()] } }));
+                                                        setNewSaleIngredient('');
+                                                    }
+                                                }}
+                                                className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {data.settings.saleIngredientsPart2.map((ingredient, index) => (
+                                                <span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-800 rounded-full text-xs">
+                                                    {ingredient}
+                                                    <button
+                                                        onClick={() => setData(prev => ({ ...prev, settings: { ...prev.settings, saleIngredientsPart2: prev.settings.saleIngredientsPart2.filter((_, i) => i !== index) } }))}
+                                                        className="hover:text-rose-600"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium mb-2">Te vermijden ingrediënten:</h4>
+                                        <div className="flex gap-2 mb-2">
+                                            <input
+                                                type="text"
+                                                value={newAvoidIngredient}
+                                                onChange={(e) => setNewAvoidIngredient(e.target.value)}
+                                                placeholder="Bijv. kip, vis"
+                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                                onKeyPress={(e) => e.key === 'Enter' && (() => {
+                                                    if (newAvoidIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, avoidIngredients: [...prev.settings.avoidIngredients, newAvoidIngredient.trim().toLowerCase()] } }));
+                                                        setNewAvoidIngredient('');
+                                                    }
+                                                })()}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    if (newAvoidIngredient.trim()) {
+                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, avoidIngredients: [...prev.settings.avoidIngredients, newAvoidIngredient.trim().toLowerCase()] } }));
+                                                        setNewAvoidIngredient('');
+                                                    }
+                                                }}
+                                                className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {data.settings.avoidIngredients.map((ingredient, index) => (
+                                                <span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs">
+                                                    {ingredient}
+                                                    <button
+                                                        onClick={() => setData(prev => ({ ...prev, settings: { ...prev.settings, avoidIngredients: prev.settings.avoidIngredients.filter((_, i) => i !== index) } }))}
+                                                        className="hover:text-rose-600"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h4 className="font-medium mb-2">Favoriete recepten bonus:</h4>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="20"
+                                                    value={data.settings.favoriteBonus}
+                                                    onChange={(e) => setData(prev => ({ ...prev, settings: { ...prev.settings, favoriteBonus: parseInt(e.target.value) } }))}
+                                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                />
+                                                <span className="w-10 text-center text-sm font-medium">{data.settings.favoriteBonus}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">Hogere waarde = grotere kans dat favorieten gekozen worden.</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium mb-2">Startdag van de week:</h4>
+                                            <select
+                                                value={data.settings.startDayOfWeek}
+                                                onChange={(e) => setData(prev => ({ ...prev, settings: { ...prev.settings, startDayOfWeek: e.target.value } }))}
+                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm capitalize"
+                                            >
+                                                {days.map(day => <option key={day} value={day}>{day}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium mb-2">Splitsingsdag voor aanbiedingen:</h4>
+                                            <select
+                                                value={data.settings.saleSplitDay}
+                                                onChange={(e) => setData(prev => ({ ...prev, settings: { ...prev.settings, saleSplitDay: e.target.value } }))}
+                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm capitalize"
+                                            >
+                                                {days.map(day => <option key={day} value={day}>{day}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="flex items-center gap-2 mt-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.settings.seasonalToggle}
+                                                    onChange={(e) => setData(prev => ({ ...prev, settings: { ...prev.settings, seasonalToggle: e.target.checked } }))}
+                                                    className="rounded"
+                                                />
+                                                <span className="text-sm font-medium">Seizoensgebonden recepten een voorkeur geven</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <h4 className="font-medium mb-2">Dagen kinderen eten mee:</h4>
+                                        <div className="space-y-1">
+                                            {days.map(day => (
+                                                <label key={day} className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={data.settings.kidsEatDays.includes(day)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setData(prev => ({ ...prev, settings: { ...prev.settings, kidsEatDays: [...prev.settings.kidsEatDays, day] } }));
+                                                            } else {
+                                                                setData(prev => ({ ...prev, settings: { ...prev.settings, kidsEatDays: prev.settings.kidsEatDays.filter(d => d !== day) } }));
+                                                            }
+                                                        }}
+                                                        className="rounded"
+                                                    />
+                                                    <span className="text-sm capitalize">{day}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium mb-2">Tijdvoorkeur per dag:</h4>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            {days.map(day => (
+                                                <div key={day} className="text-sm">
+                                                    <label className="block capitalize font-medium mb-1">{day}</label>
+                                                    <select
+                                                        value={data.settings.dayPreferences[day]}
+                                                        onChange={(e) => setData(prev => ({ ...prev, settings: { ...prev.settings, dayPreferences: { ...prev.settings.dayPreferences, [day]: e.target.value } } }))}
+                                                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                                                    >
+                                                        <option value="kort">Kort</option>
+                                                        <option value="lang">Lang</option>
+                                                        <option value="maakt-niet-uit">Maakt niet uit</option>
+                                                    </select>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="col-span-full">
+                                        <h4 className="font-medium mb-2">Cheat days en Nieuwe recepten dagen:</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <h5 className="font-medium mb-2 text-gray-600">Cheat Days</h5>
+                                                <div className="space-y-1">
+                                                    {days.map(day => (
+                                                        <label key={day} className="flex items-center gap-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={data.settings.cheatDayDays.includes(day)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, cheatDayDays: [...prev.settings.cheatDayDays, day] } }));
+                                                                    } else {
+                                                                        setData(prev => ({ ...prev, settings: { ...prev.settings, cheatDayDays: prev.settings.cheatDayDays.filter(d => d !== day) } }));
+                                                                    }
+                                                                }}
+                                                                className="rounded"
+                                                            />
+                                                            <span className="text-sm capitalize">{day}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h5 className="font-medium mb-2 text-gray-600">Nieuwe Recept Dagen</h5>
+                                                <div className="space-y-1">
+                                                    {days.map(day => (
+                                                        <label key={day} className="flex items-center gap-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={data.settings.newRecipeDays.includes(day)}
+                                                                onChange={(e) => handleToggleNewRecipeDay(day)}
+                                                                className="rounded"
+                                                            />
+                                                            <span className="text-sm capitalize">{day}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-6 flex gap-2">
+                                     <button
+                                        onClick={exportData}
+                                        className="flex-1 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600"
+                                        title="Exporteer recepten en instellingen"
+                                    >
+                                        <Download className="h-4 w-4" /> Exporteer
+                                    </button>
+                                    <label className="flex-1 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600" title="Importeer recepten en instellingen">
+                                        <Upload className="h-4 w-4" /> Importeer
+                                        <input
+                                            type="file"
+                                            accept=".json"
+                                            onChange={importData}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                                <div className="mt-4 flex flex-col items-center justify-center p-3 bg-white rounded-lg border border-gray-200 text-sm">
+                                    <h4 className="font-medium mb-2 text-center text-gray-700">Importeer nieuwe recepten (voegt toe)</h4>
+                                    <label className="p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200 text-sm flex justify-center items-center gap-2 font-medium text-emerald-600" title="Importeer een nieuwe receptenlijst">
+                                        <Plus className="h-4 w-4" /> Importeer
+                                        <input
+                                            type="file"
+                                            accept=".json"
+                                            onChange={importNewRecipes}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    {newRecipes.length > 0 && (
+                                        <span className="mt-2 text-xs text-gray-500">
+                                            {newRecipes.length} nieuwe recepten geladen.
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                        {showHistory && (
+                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold">Visuele Geschiedenis (Laatste 2 Weken)</h3>
+                                        <button onClick={() => setShowHistory(false)} className="text-gray-500 hover:text-gray-700">
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {history.length > 0 ? (
+                                            history.map((item, index) => (
+                                                <div key={index} className="flex flex-col p-3 border rounded-lg bg-gray-50">
+                                                    <span className="font-semibold text-gray-800">{item.name}</span>
+                                                    <span className="text-sm text-gray-500">{getFormattedDate(item.date)}</span>
+                                                    <span className="text-xs text-gray-400 capitalize">{item.category}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="col-span-2 text-gray-500 italic text-center">Nog geen geschiedenis om te tonen.</p>
+                                        )}
+                                    </div>
+                                </div>
+                             </div>
+                        )}
+                        {showRecipeManager && (
+                            <div className="mb-6 p-6 bg-rose-50 rounded-xl border border-gray-100 max-h-96 overflow-y-auto">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-lg font-semibold text-gray-900">Receptbeheer ({allRecipes.length})</h3>
+                                    <button
+                                        onClick={createNewRecipe}
+                                        className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 transition-colors"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Nieuw Recept
+                                    </button>
+                                </div>
+                                {data.recipes.length > 0 && (
+                                    <>
+                                        <h4 className="font-medium text-gray-700 mb-3 capitalize border-b border-gray-200 pb-2">
+                                            Mijn Recepten ({data.recipes.length})
+                                        </h4>
+                                        <div className="space-y-2 mb-6">
+                                            {Object.entries(groupedMainRecipes).sort().map(([category, recipes]) => (
+                                                <div key={category} className="mb-4">
+                                                    <h5 className="text-sm font-semibold text-gray-500 mb-2 capitalize">{category}</h5>
+                                                    <div className="space-y-2">
+                                                        {recipes.map(recipe => (
+                                                            <div
+                                                                key={recipe.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                                                                <div className="flex-1">
+                                                                    <span className="text-sm font-medium text-gray-900">{recipe.name}</span>
+                                                                    {recipe.last_prepared_date && (
+                                                                        <span className="text-xs text-gray-400 block mt-1">
+                                                                            Laatst bereid: {getFormattedDate(recipe.last_prepared_date)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex gap-2 items-center">
+                                                                    <button
+                                                                        onClick={() => toggleFavorite(recipe.id, false)}
+                                                                        className={`p-1 rounded-full transition-colors ${recipe.isFavorite ? 'bg-amber-100 text-amber-700' : 'text-gray-400 hover:text-amber-700'}`}
+                                                                        title={recipe.isFavorite ? "Verwijder van favorieten" : "Voeg toe aan favorieten"}
+                                                                    >
+                                                                        <Star className="h-4 w-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => editRecipe(recipe)}
+                                                                        className="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs hover:bg-rose-200 transition-colors"
+                                                                    >
+                                                                        Bewerk
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => deleteRecipe(recipe.id, false)}
+                                                                        className="p-1 text-rose-500 hover:text-rose-700"
+                                                                    >
+                                                                        <X className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {newRecipes.length > 0 && (
+                                    <>
+                                        <h4 className="font-medium text-gray-700 mb-3 capitalize border-b border-gray-200 pb-2">
+                                            Nieuwe Recepten ({newRecipes.length})
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {Object.entries(groupedNewRecipes).sort().map(([category, recipes]) => (
+                                                <div key={category} className="mb-4">
+                                                    <h5 className="text-sm font-semibold text-gray-500 mb-2 capitalize">{category}</h5>
+                                                    <div className="space-y-2">
+                                                        {recipes.map(recipe => (
+                                                            <div
+                                                                key={recipe.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                                                                <div className="flex-1">
+                                                                    <span className="text-sm font-medium text-gray-900">{recipe.name}</span>
+                                                                     {recipe.last_prepared_date && (
+                                                                        <span className="text-xs text-gray-400 block mt-1">
+                                                                            Laatst bereid: {getFormattedDate(recipe.last_prepared_date)}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => editRecipe(recipe)}
+                                                                        className="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs hover:bg-rose-200 transition-colors"
+                                                                    >
+                                                                        Bewerk
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => moveNewRecipeToMain(recipe)}
+                                                                        className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs hover:bg-emerald-200 transition-colors"
+                                                                    >
+                                                                        Verplaats
+                                                                        <ArrowRight className="h-3 w-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => deleteRecipe(recipe.id, true)}
+                                                                        className="p-1 text-rose-500 hover:text-rose-700"
+                                                                    >
+                                                                        <X className="h-4 w-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                        {editingRecipe && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold">
+                                            {allRecipes.find(r => r.id === editingRecipe.id) ? 'Bewerk Recept' : 'Nieuw Recept'}
+                                        </h3>
+                                        <button onClick={() => setEditingRecipe(null)} className="text-gray-500 hover:text-gray-700">
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Naam *</label>
+                                            <input
+                                                type="text"
+                                                value={editingRecipe.name}
+                                                onChange={(e) => setEditingRecipe(prev => ({ ...prev, name: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                placeholder="Bijv. Spaghetti Bolognese"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">URL (optioneel)</label>
+                                            <input
+                                                type="text"
+                                                value={editingRecipe.url || ''}
+                                                onChange={(e) => setEditingRecipe(prev => ({ ...prev, url: e.target.value }))}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                placeholder="https://www.lekkerensimpel.com/mijn-recept"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Bereidingstijd</label>
+                                                <select
+                                                    value={editingRecipe.prepTime}
+                                                    onChange={(e) => setEditingRecipe(prev => ({ ...prev, prepTime: e.target.value }))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    <option value="kort">Kort (tot 30 min)</option>
+                                                    <option value="lang">Lang (meer dan 30 min)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Moeilijkheid</label>
+                                                <select
+                                                    value={editingRecipe.difficulty}
+                                                    onChange={(e) => setEditingRecipe(prev => ({ ...prev, difficulty: e.target.value }))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    <option value="niet-moeilijk">Niet moeilijk</option>
+                                                    <option value="moeilijk">Moeilijk</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Categorie</label>
+                                                <select
+                                                    value={editingRecipe.category}
+                                                    onChange={(e) => setEditingRecipe(prev => ({ ...prev, category: e.target.value }))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium mb-1">Koolhydraattype</label>
+                                                <select
+                                                    value={editingRecipe.carbType}
+                                                    onChange={(e) => setEditingRecipe(prev => ({ ...prev, carbType: e.target.value }))}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                >
+                                                    {carbTypes.map(carb => <option key={carb} value={carb}>{carb}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingRecipe.kidFriendly}
+                                                        onChange={(e) => setEditingRecipe(prev => ({ ...prev, kidFriendly: e.target.checked }))}
+                                                    />
+                                                    <span className="text-sm">Kindvriendelijk</span>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingRecipe.makeAhead}
+                                                        onChange={(e) => setEditingRecipe(prev => ({ ...prev, makeAhead: e.target.checked }))}
+                                                    />
+                                                    <span className="text-sm">Van tevoren te maken</span>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingRecipe.guestsFriendly}
+                                                        onChange={(e) => setEditingRecipe(prev => ({ ...prev, guestsFriendly: e.target.checked }))}
+                                                    />
+                                                    <span className="text-sm">Geschikt voor gasten</span>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingRecipe.cheatDay}
+                                                        onChange={(e) => setEditingRecipe(prev => ({ ...prev, cheatDay: e.target.checked }))}
+                                                    />
+                                                    <span className="text-sm">Is cheat day recept</span>
+                                                </label>
+                                            </div>
+                                             <div>
+                                                <label className="flex items-center gap-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingRecipe.isFavorite}
+                                                        onChange={(e) => setEditingRecipe(prev => ({ ...prev, isFavorite: e.target.checked }))}
+                                                    />
+                                                    <span className="text-sm">Is favoriet recept</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Ingrediënten *</label>
+                                            <div className="space-y-2">
+                                                {editingRecipe.ingredients.map((ingredient, index) => (
+                                                    <div key={index} className="flex items-center gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={ingredient}
+                                                            onChange={(e) => {
+                                                                const newIngredients = [...editingRecipe.ingredients];
+                                                                newIngredients[index] = e.target.value;
+                                                                setEditingRecipe(prev => ({ ...prev, ingredients: newIngredients }));
+                                                            }}
+                                                            className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                                                            placeholder="Bijv. gehakt, ui, knoflook"
+                                                        />
+                                                        <button
+                                                            onClick={() => removeIngredientFromRecipe(index)}
+                                                            className="p-1 text-rose-500 hover:text-rose-700"
+                                                        >
+                                                            <Minus className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Nieuw ingrediënt toevoegen..."
+                                                        onKeyPress={(e) => {
+                                                            if (e.key === 'Enter' && e.target.value.trim()) {
+                                                                addIngredientToRecipe(e.target.value);
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                        className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                                                    />
+                                                    <button
+                                                        onClick={(e) => {
+                                                            const input = e.target.parentNode.querySelector('input');
+                                                            if (input.value.trim()) {
+                                                                addIngredientToRecipe(input.value);
+                                                                input.value = '';
+                                                            }
+                                                        }}
+                                                        className="p-1 text-teal-500 hover:text-teal-700"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 pt-4">
+                                            <button
+                                                onClick={allRecipes.find(r => r.id === editingRecipe.id) ? saveRecipe : saveNewRecipe}
+                                                className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 font-medium"
+                                            >
+                                                <Save className="h-4 w-4" />
+                                                {allRecipes.find(r => r.id === editingRecipe.id) ? 'Opslaan' : 'Recept Toevoegen'}
+                                            </button>
+                                            <button
+                                                onClick={() => setEditingRecipe(null)}
+                                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium"
+                                            >
+                                                Annuleren
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {showShoppingList && (
+                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold">Boodschappenlijst</h3>
+                                        <button onClick={() => setShowShoppingList(false)} className="text-gray-500 hover:text-gray-700">
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {Object.entries(getShoppingList()).length > 0 ? (
+                                            Object.entries(getShoppingList()).map(([ingredient, count]) => (
+                                                <div key={ingredient} className="flex items-center gap-2">
+                                                    <span className="text-sm">{ingredient}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 italic">De boodschappenlijst is leeg.</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const listText = Object.keys(getShoppingList()).map(ing => `- ${ing}`).join('\n');
+                                            navigator.clipboard.writeText(listText)
+                                                .then(() => alert('Boodschappenlijst gekopieerd naar klembord!'))
+                                                .catch(err => console.error('Kopieerfout:', err));
+                                        }}
+                                        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 font-medium"
+                                    >
+                                        <Check className="h-4 w-4" /> Kopieer lijst
+                                    </button>
+                                </div>
+                             </div>
+                        )}
+                        <div className="flex gap-3 mb-6 flex-wrap">
+                            <button
+                                onClick={generateWeekPlan}
+                                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                            >
+                                <Calendar className="h-4 w-4" />
+                                Genereer Planning
+                            </button>
+                            <button
+                                onClick={finalizeWeekPlan}
+                                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                            >
+                                <Check className="h-4 w-4" />
+                                Maak Schema Definitief
+                            </button>
+                            <button
+                                onClick={shareWeekPlan}
+                                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-medium"
+                            >
+                                <Share className="h-4 w-4" />
+                                Deel Planning
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            {orderedDays.map(day => (
+                                <div key={day} className="border border-gray-200 rounded-xl p-4 bg-white">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-lg font-medium capitalize text-gray-900">{day}</h3>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleToggleGuests(day)}
+                                                className={`p-2 rounded-full ${daySpecificSettings[day]?.guests ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'}`}
+                                                title="Gasten eten mee"
+                                            >
+                                                <Users className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleToggleCheatDay(day)}
+                                                className={`p-2 rounded-full ${data.settings.cheatDayDays.includes(day) ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-400'}`}
+                                                title="Cheat day"
+                                            >
+                                                <Pizza className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleToggleNewRecipeDay(day)}
+                                                className={`p-2 rounded-full ${data.settings.newRecipeDays.includes(day) ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-400'}`}
+                                                title="Probeer een nieuw recept"
+                                            >
+                                                <Sparkles className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const today = new Date();
+                                                    const thirtyDaysAgo = new Date();
+                                                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                                                    
+                                                    const availableRecipes = allRecipes.filter(recipe => {
+                                                        const hasAvoidIngredient = recipe.ingredients.some(ingredient => data.settings.avoidIngredients.includes(ingredient.toLowerCase()));
+                                                        if (hasAvoidIngredient) return false;
+                                                        
+                                                        const isAlreadyPlanned = Object.values(weekPlan).some(plannedRecipe => plannedRecipe && plannedRecipe.id === recipe.id);
+                                                        if (isAlreadyPlanned) return false;
+
+                                                        const isCheatDay = data.settings.cheatDayDays.includes(day);
+                                                        if (isCheatDay && !recipe.cheatDay) return false;
+                                                        if (!isCheatDay && recipe.cheatDay) return false;
+                                                        
+                                                        const guestsExpected = daySpecificSettings[day]?.guests;
+                                                        if (guestsExpected && !recipe.guestsFriendly) return false;
+                                                        
+                                                        const isNewRecipeDay = data.settings.newRecipeDays.includes(day);
+                                                        const isNew = newRecipes.some(r => r.id === recipe.id);
+                                                        if (isNewRecipeDay && !isNew) return false;
+                                                        if (!isNewRecipeDay && isNew) return false;
+
+                                                        const kidsEat = data.settings.kidsEatDays.includes(day);
+                                                        if (kidsEat && !recipe.kidFriendly) return false;
+
+                                                        const dayPrepTime = data.settings.dayPreferences[day];
+                                                        if (dayPrepTime !== 'maakt-niet-uit' && recipe.prepTime !== dayPrepTime) return false;
+                                                        
+                                                        if (recipe.last_prepared_date) {
+                                                            const lastPrepDate = new Date(recipe.last_prepared_date);
+                                                            if (lastPrepDate > thirtyDaysAgo) {
+                                                                return false;
+                                                            }
+                                                        }
+
+                                                        return true;
+                                                    });
+
+                                                    if (availableRecipes.length > 0) {
+                                                        const recipesWithScores = availableRecipes.map(recipe => ({
+                                                            ...recipe,
+                                                            score: calculateRecipeScore(recipe, day, weekPlan)
+                                                        }));
+                                                        recipesWithScores.sort((a, b) => b.score - a.score);
+                                                        const selectedRecipe = recipesWithScores[0];
+                                                        setWeekPlan(prev => ({ ...prev, [day]: selectedRecipe }));
+                                                    } else {
+                                                         alert('Geen recepten gevonden die voldoen aan de huidige voorwaarden.');
+                                                    }
+                                                }}
+                                                className="px-3 py-1.5 hover:bg-gray-100 text-gray-700 rounded-lg text-xs transition-colors border border-gray-200"
+                                                title="Willekeurig gerecht"
+                                            >
+                                                Willekeurig
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {weekPlan[day] ? (
+                                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-medium text-gray-900">{weekPlan[day].name}</h4>
+                                                    {weekPlan[day].url && (
+                                                        <a href={weekPlan[day].url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-xs" title="Bekijk recept online">
+                                                            (link)
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-3 text-sm text-gray-600">
+                                                    <span>{getDifficultyDisplay(weekPlan[day].difficulty)}</span>
+                                                    <span>{getTimeDisplay(weekPlan[day].prepTime)}</span>
+                                                    {weekPlan[day].kidFriendly && <span title="Kindvriendelijk">👶</span>}
+                                                    {weekPlan[day].guestsFriendly && <span title="Geschikt voor gasten">👥</span>}
+                                                    {weekPlan[day].cheatDay && <span title="Cheat day recept">🍕</span>}
+                                                    {newRecipes.some(r => r.id === weekPlan[day].id) && <span title="Nieuw recept">✨</span>}
+                                                    {weekPlan[day].isFavorite && <span title="Favoriet recept">❤️</span>}
+                                                    {weekPlan[day].makeAhead && <span title="Van tevoren te maken">📅</span>}
+                                                </div>
+                                            </div>
+                                            {weekPlan[day].last_prepared_date && (
+                                                <span className="text-xs text-gray-400 block mt-1">
+                                                    Laatst bereid: {getFormattedDate(weekPlan[day].last_prepared_date)}
+                                                </span>
+                                            )}
+                                            <p className="text-sm text-gray-600 leading-relaxed">
+                                                {weekPlan[day].ingredients.map((ingredient, index) => {
+                                                    const saleSplitIndex = orderedDays.indexOf(data.settings.saleSplitDay.toLowerCase());
+                                                    const dayIndex = orderedDays.indexOf(day.toLowerCase());
+                                                    const saleIngredients = dayIndex < saleSplitIndex ? data.settings.saleIngredientsPart1 : data.settings.saleIngredientsPart2;
+                                                    const isOnSale = saleIngredients.includes(ingredient.toLowerCase());
+                                                    const currentSeason = getSeason();
+                                                    const seasonIngredients = seasonalIngredients[currentSeason] || [];
+                                                    const isSeasonal = data.settings.seasonalToggle && seasonIngredients.includes(ingredient.toLowerCase());
+
+                                                    return (
+                                                        <span key={index} className={isOnSale ? 'text-teal-600 font-medium' : isSeasonal ? 'text-blue-600 font-medium' : ''}>
+                                                            {ingredient}{index < weekPlan[day].ingredients.length - 1 ? ', ' : ''}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="text-gray-500 italic text-sm py-4 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                                            Nog geen gerecht geselecteerd
+                                        </div>
+                                    )}
+                                    <div className="mt-3">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Sorteer op:</label>
+                                        <select
+                                            onChange={(e) => {
+                                                const sortedRecipes = sortRecipes(allRecipes, e.target.value);
+                                                setWeekPlan(prev => ({ ...prev, [day]: sortedRecipes.length > 0 ? sortedRecipes[0] : null }));
+                                            }}
+                                            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all mb-2"
+                                        >
+                                            <option value="">Geen sortering</option>
+                                            <option value="recent-gegeten">Recent gegeten</option>
+                                            <option value="favoriet">Favoriet</option>
+                                            <option value="kort">Korte bereidingstijd</option>
+                                            <option value="lang">Lange bereidingstijd</option>
+                                            <optgroup label="Soort maaltijd">
+                                                {categories.map(cat => <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>)}
+                                            </optgroup>
+                                             <optgroup label="Status">
+                                                <option value="bestaand">Bestaand</option>
+                                                <option value="nieuw">Nieuw</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <select
+                                        value={weekPlan[day]?.id || ''}
+                                        onChange={(e) => {
+                                            const recipe = allRecipes.find(r => r.id === parseInt(e.target.value));
+                                            setWeekPlan(prev => ({ ...prev, [day]: recipe }));
+                                        }}
+                                        className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-xs bg-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all"
+                                    >
+                                        <option value="">Kies handmatig...</option>
+                                        {Object.entries(groupedAllRecipes).sort().map(([category, recipes]) => (
+                                            <optgroup key={category} label={`- ${category.charAt(0).toUpperCase() + category.slice(1)}`}>
+                                                {recipes.map(recipe => (
+                                                    <option key={recipe.id} value={recipe.id}>
+                                                        {recipe.name}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        ))}
+                                    </select>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-8 p-6 bg-teal-50 rounded-xl border border-teal-100">
+                            <h3 className="font-semibold mb-3 text-sm text-teal-900 flex items-center gap-2">
+                                💡 Slimme functies
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-3 text-xs text-teal-800">
+                                <div className="space-y-2">
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Gedeelde ingrediënten tussen gerechten voor voordeel</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Variatie in koolhydraten (pasta/rijst/aardappel)</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Respecteert tijd-, cheat day, kind- en gastvoorkeuren per dag</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Vermijdt ongewenste ingrediënten automatisch</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Export/Import om je recepten en instellingen te bewaren</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Direct delen via WhatsApp met weekplanning</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                                        <span>Voorkomt dat recent bereide gerechten opnieuw worden gekozen.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<WeekPlanningApp />);
+    </script>
+</body>
+</html>
