@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Week Planning App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .dropdown-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+      .dropdown-content.open {
+        max-height: 500px; /* Voldoende groot om alles te tonen */
+        transition: max-height 0.5s ease-in;
+      }
+      /* Aangepaste animatiestijlen voor een visueel spectaculair effect */
+      @keyframes explodeAndFly {
+        0% {
+          transform: scale(1) rotate(0deg) translateY(0);
+          opacity: 1;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        25% {
+          transform: scale(1.1) rotate(5deg);
+          box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+        50% {
+          transform: scale(1.2) rotate(-5deg);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(0.2) rotate(360deg) translateY(-500px) translateX(200px);
+          opacity: 0;
+        }
+      }
+
+      .fly-away {
+        animation: explodeAndFly 2s ease-in-out forwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useState, useEffect, useMemo, useRef } = React;
+      const { createRoot } = ReactDOM;
+
+      // Icon Components (replaces lucideReact)
+      const Plus = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+      );
+      const X = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M18 6L6 18" />
+          <path d="M6 6l12 12" />
+        </svg>
+      );
+      const Download = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" x2="12" y1="15" y2="3" />
+        </svg>
+      );
+      const Upload = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" x2="12" y1="3" y2="15" />
+        </svg>
+      );
+      const Calendar = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+          <line x1="16" x2="16" y1="2" y2="6" />
+          <line x1="8" x2="8" y1="2" y2="6" />
+          <line x1="3" x2="21" y1="10" y2="10" />
+        </svg>
+      );
+      const Check = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      );
+      const Share = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+          <polyline points="16 6 12 2 8 6" />
+          <line x1="12" y1="2" x2="12" y2="15" />
+        </svg>
+      );
+      const Lock = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      );
+      const Unlock = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-unlock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+      );
+      const Users = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+      const Pizza = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21.29 15.6l-2.43-6.19a2 2 0 0 0-1.72-1.12L12 8a2 2 0 0 0-1.72 1.12L7.71 15.6a2 2 0 0 0-.29 1.13c0 1.1 1.16 2 2.65 2a.23.23 0 0 1 .29-.1l4.87-4.17a2 2 0 0 1 2.5 0l4.87 4.17a.23.23 0 0 1 .29.1c1.49 0 2.65-.9 2.65-2a2 2 0 0 0-.29-1.13z" />
+          <path d="M12 2v6" />
+          <circle cx="12" cy="13" r="1" />
+          <circle cx="16" cy="11" r="1" />
+          <circle cx="8" cy="11" r="1" />
+        </svg>
+      );
+      const Sparkles = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M11 1.2a1 1 0 0 1 2 0l2 4a1 1 0 0 0 1 0l4 2a1 1 0 0 1 0 2l-4 2a1 1 0 0 0-1 0l-2 4a1 1 0 0 1-2 0l-2-4a1 1 0 0 0-1 0l-4-2a1 1 0 0 1 0-2l4-2a1 1 0 0 0 1 0z" />
+        </svg>
+      );
+      const ListPlus = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
+      );
+      const Save = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+      );
+      const ArrowRight = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+          <path d="M12 5l7 7-7 7" />
+        </svg>
+      );
+      const Minus = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14" />
+        </svg>
+      );
+      const Star = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      );
+      const List = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="8" x2="21" y1="6" y2="6" />
+          <line x1="8" x2="21" y1="12" y2="12" />
+          <line x1="8" x2="21" y1="18" y2="18" />
+          <line x1="3" x2="3.01" y1="6" y2="6" />
+          <line x1="3" x2="3.01" y1="12" y2="12" />
+          <line x1="3" x2="3.01" y1="18" y2="18" />
+        </svg>
+      );
+      const Search = (props) => (
+        <svg
+          {...props}
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          view-box="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+      );
+      
+      const Edit = (props) => (
+          <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+      );
+      
+      const ClipboardCheck = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      );
+      
+      const History = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/></svg>
+      );
+      
+      const ShoppingCart = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+      );
+      
+      const Settings = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.39a2 2 0 0 0 .73 2.73l.08.15a2 2 0 0 1 0 2.73l-.08.15a2 2 0 0 0-.73 2.73l.22.39a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.08-.15a2 2 0 0 1 0-2.73l.08-.15a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      );
+      
+      const ListTodo = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-todo"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17h18"/><path d="M7 11V7"/><path d="M14 5h7"/><path d="M14 17h7"/></svg>
+      );
+      
+      const Clock = (props) => (
+          <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      );
+      
+      const GripHorizontal = (props) => (
+          <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grip-horizontal"><circle cx="12" cy="9" r="1"/><circle cx="19" cy="9" r="1"/><circle cx="5" cy="9" r="1"/><circle cx="12" cy="15" r="1"/><circle cx="19" cy="15" r="1"/><circle cx="5" cy="15" r="1"/></svg>
+      );
+      const ChevronDown = (props) => (
+         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+      );
+      const ChevronUp = (props) => (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up"><path d="m18 15-6-6-6 6"/></svg>
+      );
+      const ChevronRight = (props) => (
+         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+      );
+      const ChevronLeft = (props) => (
+         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+      );
+
+      const days = [
+        'maandag',
+        'dinsdag',
+        'woensdag',
+        'donderdag',
+        'vrijdag',
+        'zaterdag',
+        'zondag',
+      ];
+      const categories = ['vlees', 'vis', 'vega', 'kip', 'pasta', 'rijst', 'aardappel', 'anders'];
+      const carbTypes = ['pasta', 'rijst', 'aardappel', 'anders', 'geen'];
+
+      const initialData = {
+        settings: {
+          saleIngredientsPart1: [],
+          saleIngredientsPart2: [],
+          avoidIngredients: [],
+          favoriteBonus: 5,
+          recentBonus: 10,
+          startDayOfWeek: 'maandag',
+          saleSplitDay: 'donderdag',
+          seasonalToggle: true,
+          seasonalIngredients: {
+            winter: [],
+            lente: [],
+            zomer: [],
+            herfst: [],
+          },
+          kidsEatDays: [],
+          dayPreferences: {
+            maandag: 'maakt-niet-uit',
+            dinsdag: 'maakt-niet-uit',
+            woensdag: 'maakt-niet-uit',
+            donderdag: 'maakt-niet-uit',
+            vrijdag: 'maakt-niet-uit',
+            zaterdag: 'maakt-niet-uit',
+            zondag: 'maakt-niet-uit',
+          },
+          cheatDayDays: [],
+          newRecipeDays: [],
+        },
+        recipes: [],
+        newRecipes: [],
+        history: [],
+        lastPlan: {
+          plan: {},
+          date: null,
+        },
+      };
+
+      const getSeason = () => {
+        const month = new Date().getMonth();
+        if (month >= 2 && month <= 4) return 'lente';
+        if (month >= 5 && month <= 7) return 'zomer';
+        if (month >= 8 && month <= 10) return 'herfst';
+        return 'winter';
+      };
+
+      const getFormattedDate = (dateString) => {
+        if (!dateString) return 'Nooit';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+      };
+
+      const getDifficultyDisplay = (difficulty) => {
+        if (difficulty === 'moeilijk') return 'Moeilijk 🥵';
+        return 'Makkelijk 😎';
+      };
+
+      const getTimeDisplay = (prepTime) => {
+        if (prepTime === 'lang') return 'Lang ⏳';
+        return 'Kort ⏱️';
+      };
+
+      const WeekPlanningApp = () => {
+        const [data, setData] = useState(() => {
+          try {
+            const storedData = localStorage.getItem('weekPlanningData');
+            const parsedData = storedData ? JSON.parse(storedData) : initialData;
+            return { ...initialData, ...parsedData, lastPlan: parsedData.lastPlan || initialData.lastPlan };
+          } catch (error) {
+            console.error('Fout bij het laden van data uit localStorage:', error);
+            return initialData;
+          }
+        });
+        const [weekPlan, setWeekPlan] = useState({});
+        const [lockedDays, setLockedDays] = useState([]);
+        const [daySpecificSettings, setDaySpecificSettings] = useState({});
+        const [showSettings, setShowSettings] = useState(false);
+        const [showRecipeManager, setShowRecipeManager] = useState(false);
+        const [showShoppingList, setShowShoppingList] = useState(false);
+        const [showHistory, setShowHistory] = useState(false);
+        const [editingRecipe, setEditingRecipe] = useState(null);
+        const [showRecipeDetails, setShowRecipeDetails] = useState(null);
+        const [newSaleIngredient1, setNewSaleIngredient1] = useState('');
+        const [newSaleIngredient2, setNewSaleIngredient2] = useState('');
+        const [newAvoidIngredient, setNewAvoidIngredient] = useState('');
+        const [showLegend, setShowLegend] = useState(false);
+        const [recipeSearch, setRecipeSearch] = useState('');
+        const [showLastPlan, setShowLastPlan] = useState(false);
+        const [lastPlanDropdownOpen, setLastPlanDropdownOpen] = useState(false);
+        const [scrollPosition, setScrollPosition] = useState(0);
+        const [animatingDays, setAnimatingDays] = useState([]);
+        const [movingRecipe, setMovingRecipe] = useState(null);
+        const [sortDropdownOpen, setSortDropdownOpen] = useState({});
+        const [selectedRecipeForDay, setSelectedRecipeForDay] = useState({});
+        
+        const recipeListRef = useRef(null);
+        const lastPlanDropdownRef = useRef(null);
+        const sortDropdownRefs = useRef({});
+
+        const { recipes, newRecipes, history } = data;
+        
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            if (lastPlanDropdownRef.current && !lastPlanDropdownRef.current.contains(event.target)) {
+              setLastPlanDropdownOpen(false);
+            }
+          };
+          document.addEventListener('mousedown', handleClickOutside);
+          return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+          };
+        }, [lastPlanDropdownRef]);
+
+        useEffect(() => {
+          const handleClickOutside = (event) => {
+            Object.keys(sortDropdownRefs.current).forEach(day => {
+                if (sortDropdownRefs.current[day] && !sortDropdownRefs.current[day].contains(event.target)) {
+                    setSortDropdownOpen(prev => ({ ...prev, [day]: false }));
+                }
+            });
+          };
+          document.addEventListener('mousedown', handleClickOutside);
+          return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+          };
+        }, []);
+
+        useEffect(() => {
+          try {
+            localStorage.setItem('weekPlanningData', JSON.stringify(data));
+          } catch (error) {
+            console.error('Fout bij het opslaan van data in localStorage:', error);
+          }
+        }, [data]);
+
+        useEffect(() => {
+            if (showRecipeManager && recipeListRef.current) {
+                recipeListRef.current.scrollTop = scrollPosition;
+            }
+        }, [showRecipeManager, scrollPosition]);
+        
+        const saveDataToLocalStorage = () => {
+            try {
+                localStorage.setItem('weekPlanningData', JSON.stringify(data));
+                alert('Alle data is geforceerd opgeslagen.');
+            } catch (error) {
+                console.error('Fout bij het geforceerd opslaan van data:', error);
+                alert('Er is een fout opgetreden bij het opslaan van de data.');
+            }
+        };
+
+        const orderedDays = useMemo(() => {
+          const start = data.settings.startDayOfWeek;
+          const startIndex = days.indexOf(start);
+          return [...days.slice(startIndex), ...days.slice(0, startIndex)];
+        }, [data.settings.startDayOfWeek]);
+
+        const allRecipes = useMemo(() => [...recipes, ...newRecipes], [recipes, newRecipes]);
+        
+        const groupedRecipesByCategory = useMemo(() => {
+            const grouped = allRecipes.reduce((acc, recipe) => {
+                (acc[recipe.category] = acc[recipe.category] || []).push(recipe);
+                return acc;
+            }, {});
+            
+            Object.keys(grouped).forEach(category => {
+                grouped[category].sort((a, b) => a.name.localeCompare(b.name));
+            });
+            
+            return grouped;
+        }, [allRecipes]);
+
+        const groupedAllRecipes = useMemo(() => {
+          const filteredRecipes = allRecipes.filter((recipe) =>
+            recipe.name.toLowerCase().includes(recipeSearch.toLowerCase())
+          );
+          return filteredRecipes.reduce((acc, recipe) => {
+            (acc[recipe.category] = acc[recipe.category] || []).push(recipe);
+            return acc;
+          }, {});
+        }, [allRecipes, recipeSearch]);
+
+        const groupedMainRecipes = useMemo(() => {
+          const filteredRecipes = recipes.filter((recipe) =>
+            recipe.name.toLowerCase().includes(recipeSearch.toLowerCase())
+          );
+          return filteredRecipes.reduce((acc, recipe) => {
+            (acc[recipe.category] = acc[recipe.category] || []).push(recipe);
+            return acc;
+          }, {});
+        }, [recipes, recipeSearch]);
+
+        const groupedNewRecipes = useMemo(() => {
+          const filteredRecipes = newRecipes.filter((recipe) =>
+            recipe.name.toLowerCase().includes(recipeSearch.toLowerCase())
+          );
+          return filteredRecipes.reduce((acc, recipe) => {
+            (acc[recipe.category] = acc[recipe.category] || []).push(recipe);
+            return acc;
+          }, {});
+        }, [newRecipes, recipeSearch]);
+        
+        const generateWeekPlan = () => {
+          const newPlan = { ...weekPlan };
+          const plannedCarbTypes = Object.values(newPlan).map(r => r?.carbType);
+          const plannedCategories = Object.values(newPlan).map(r => r?.category);
+          const newPlanIds = new Set(Object.values(newPlan).map(r => r?.id));
+          const availableRecipes = allRecipes.filter((r) => !newPlanIds.has(r.id));
+          
+          if (availableRecipes.length === 0) {
+            alert('Geen recepten beschikbaar om een planning mee te maken. Voeg eerst recepten toe.');
+            return;
+          }
+
+          orderedDays.forEach((day) => {
+            if (lockedDays.includes(day)) return;
+            
+            const daySettings = data.settings.dayPreferences[day];
+            const kidsEat = data.settings.kidsEatDays.includes(day) || daySpecificSettings[day]?.kids;
+            const guestsFriendly = daySpecificSettings[day]?.guests;
+            const isCheatDay = data.settings.cheatDayDays.includes(day);
+            const isNewRecipeDay = data.settings.newRecipeDays.includes(day);
+
+            const filteredRecipes = availableRecipes.filter((recipe) => {
+              if (isNewRecipeDay && !newRecipes.some((r) => r.id === recipe.id)) return false;
+              if (!isNewRecipeDay && newRecipes.some((r) => r.id === recipe.id)) return false;
+              if (guestsFriendly && !recipe.guestsFriendly) return false;
+              if (isCheatDay && !recipe.cheatDay) return false;
+              if (kidsEat && !recipe.kidFriendly) return false;
+              if (daySettings === 'kort' && recipe.prepTime === 'lang') return false;
+              if (daySettings === 'lang' && recipe.prepTime === 'kort') return false;
+              if (recipe.ingredients.some((ing) => data.settings.avoidIngredients.includes(ing.toLowerCase()))) return false;
+
+              return true;
+            });
+
+            if (filteredRecipes.length === 0) {
+              newPlan[day] = null;
+              return;
+            }
+
+            const getRecipeScore = (recipe) => {
+              let score = 100;
+
+              if (recipe.last_prepared_date) {
+                const lastPrepared = new Date(recipe.last_prepared_date);
+                const daysSince = (new Date() - lastPrepared) / (1000 * 60 * 60 * 24);
+                score += daysSince > 30 ? 20 : Math.max(0, data.settings.recentBonus * (1 / (daysSince + 1)));
+              } else {
+                 score += data.settings.recentBonus * 2;
+              }
+
+              if (recipe.isFavorite) {
+                score += data.settings.favoriteBonus;
+              }
+
+              const saleSplitIndex = orderedDays.indexOf(data.settings.saleSplitDay.toLowerCase());
+              const dayIndex = orderedDays.indexOf(day.toLowerCase());
+              const saleIngredients =
+                dayIndex < saleSplitIndex
+                  ? data.settings.saleIngredientsPart1
+                  : data.settings.saleIngredientsPart2;
+              const saleBonus =
+                recipe.ingredients.filter((ing) => saleIngredients.includes(ing.toLowerCase()))
+                  .length * 3;
+              score += saleBonus;
+
+              if (data.settings.seasonalToggle) {
+                const currentSeason = getSeason();
+                const seasonIngredients = data.settings.seasonalIngredients[currentSeason] || [];
+                const seasonalBonus =
+                  recipe.ingredients.filter((ing) =>
+                    seasonIngredients.includes(ing.toLowerCase())
+                  ).length * 2;
+                score += seasonalBonus;
+              }
+              
+              const carbTypesCount = plannedCarbTypes.filter(c => c === recipe.carbType).length;
+              if (carbTypesCount >= 1 && recipe.carbType !== 'geen') {
+                 score -= 20 * carbTypesCount;
+              }
+              
+              const categoryPenalty = plannedCategories.filter(c => c === recipe.category).length;
+              if (categoryPenalty > 0) {
+                 score -= 5 * categoryPenalty;
+              }
+
+              score += recipe.weight;
+              
+              score += (Math.random() - 0.5) * 5; 
+
+              return score;
+            };
+            
+            const scoredRecipes = filteredRecipes.map((recipe) => ({
+              recipe,
+              score: getRecipeScore(recipe),
+            }));
+            
+            scoredRecipes.sort((a, b) => b.score - a.score);
+            
+            const chosenRecipe = scoredRecipes[0]?.recipe;
+
+            if (chosenRecipe) {
+              newPlan[day] = chosenRecipe;
+              availableRecipes.splice(
+                availableRecipes.findIndex((r) => r.id === chosenRecipe.id),
+                1
+              );
+              plannedCarbTypes.push(chosenRecipe.carbType);
+              plannedCategories.push(chosenRecipe.category);
+              newPlanIds.add(chosenRecipe.id);
+            } else {
+              newPlan[day] = null;
+            }
+          });
+          setWeekPlan(newPlan);
+        };
+        
+        // Finalize function with a 2-second, sequential animation
+        const finalizeWeekPlan = () => {
+          if (Object.keys(weekPlan).length === 0) {
+            alert('Genereer eerst een weekplanning.');
+            return;
+          }
+
+          const plannedDays = orderedDays.filter(day => weekPlan[day]);
+          if (plannedDays.length === 0) {
+            alert('Geen gerechten om definitief te maken.');
+            return;
+          }
+
+          let delay = 0;
+          const duration = 2000 / plannedDays.length; // Ensure total animation is around 2 seconds
+
+          plannedDays.forEach((day, index) => {
+            setTimeout(() => {
+              setAnimatingDays(prev => [...prev, day]);
+            }, delay);
+            delay += duration;
+          });
+
+          // After all animations, perform the final state update
+          setTimeout(() => {
+            const updatedRecipes = data.recipes.map((recipe) => {
+              const plannedDay = Object.keys(weekPlan).find((day) => weekPlan[day]?.id === recipe.id);
+              if (plannedDay) {
+                return { ...recipe, last_prepared_date: new Date().toISOString() };
+              }
+              return recipe;
+            });
+
+            const updatedNewRecipes = data.newRecipes.filter(
+              (newRecipe) =>
+                !Object.values(weekPlan).some((plannedRecipe) => plannedRecipe?.id === newRecipe.id)
+            );
+
+            const newHistory = Object.values(weekPlan)
+              .filter((r) => r)
+              .map((r) => ({
+                id: r.id,
+                name: r.name,
+                date: new Date().toISOString(),
+                category: r.category,
+              }));
+              
+            const finalizedDate = new Date().toISOString();
+            const finalizedPlan = Object.fromEntries(
+              Object.entries(weekPlan).map(([day, recipe]) => [day, recipe ? { ...recipe } : null])
+            );
+
+            setData((prev) => ({
+              ...prev,
+              recipes: updatedRecipes,
+              newRecipes: updatedNewRecipes,
+              history: [...prev.history, ...newHistory].slice(-14),
+              lastPlan: {
+                plan: finalizedPlan,
+                date: finalizedDate,
+              }
+            }));
+            setWeekPlan({});
+            setAnimatingDays([]);
+          }, delay + 200); // 200ms extra delay to ensure the last animation is fully visible
+        };
+
+
+        const getShoppingList = () => {
+          const list = {};
+          Object.values(weekPlan).forEach((recipe) => {
+            if (recipe && recipe.ingredients) {
+              recipe.ingredients.forEach((ingredient) => {
+                const ing = ingredient.toLowerCase().trim();
+                list[ing] = (list[ing] || 0) + 1;
+              });
+            }
+          });
+          return list;
+        };
+
+        const toggleLockDay = (day) => {
+          setLockedDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
+        };
+        
+        const handleStartMove = (recipe, sourceDay) => {
+            setMovingRecipe({ recipe, sourceDay });
+        };
+        
+        const handleMoveToDay = (targetDay) => {
+            if (!movingRecipe) return;
+
+            const { recipe, sourceDay } = movingRecipe;
+            
+            if (lockedDays.includes(targetDay)) {
+                alert('Kan niet verplaatsen naar een vergrendelde dag.');
+                setMovingRecipe(null);
+                return;
+            }
+
+            const targetRecipe = weekPlan[targetDay];
+
+            setWeekPlan((prev) => {
+                const newPlan = { ...prev };
+                newPlan[targetDay] = recipe;
+                newPlan[sourceDay] = targetRecipe;
+                return newPlan;
+            });
+            setMovingRecipe(null);
+        };
+
+        const handleDragStart = (e, recipe, day) => {
+          e.dataTransfer.setData('recipeId', recipe.id);
+          e.dataTransfer.setData('sourceDay', day);
+        };
+
+        const handleDragOver = (e) => {
+          e.preventDefault();
+        };
+
+        const handleDrop = (e, targetDay) => {
+          e.preventDefault();
+          
+          const recipeId = parseInt(e.dataTransfer.getData('recipeId'));
+          const sourceDay = e.dataTransfer.getData('sourceDay');
+
+          if (lockedDays.includes(targetDay) || lockedDays.includes(sourceDay)) {
+            alert('Kan niet verplaatsen naar of van een vergrendelde dag.');
+            return;
+          }
+
+          const movedRecipe = weekPlan[sourceDay];
+          const targetRecipe = weekPlan[targetDay];
+
+          setWeekPlan((prev) => {
+            const newPlan = { ...prev };
+            newPlan[targetDay] = movedRecipe;
+            newPlan[sourceDay] = targetRecipe;
+            return newPlan;
+          });
+        };
+
+
+        const exportData = () => {
+          const dataStr = JSON.stringify(data, null, 2);
+          const blob = new Blob([dataStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'weekplanning-data.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        };
+
+        const importData = (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const importedData = JSON.parse(e.target.result);
+              if (importedData.recipes && importedData.settings) {
+                setData(importedData);
+                alert('Data succesvol geïmporteerd!');
+              } else {
+                throw new Error('Ongeldig bestandsformaat.');
+              }
+            } catch (error) {
+              console.error('Fout bij het importeren van het bestand:', error);
+              alert('Fout bij het importeren van het bestand. Zorg ervoor dat het een geldig JSON-bestand is.');
+            }
+          };
+          reader.readAsText(file);
+        };
+
+        const importNewRecipes = (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const importedRecipes = JSON.parse(e.target.result);
+              if (Array.isArray(importedRecipes)) {
+                const currentRecipeNames = new Set(allRecipes.map((r) => r.name.toLowerCase()));
+                const newUniqueRecipes = importedRecipes.filter(
+                  (recipe) => !currentRecipeNames.has(recipe.name.toLowerCase())
+                );
+                setData((prev) => ({
+                    ...prev,
+                    newRecipes: [...prev.newRecipes, ...newUniqueRecipes],
+                }));
+                alert(`${newUniqueRecipes.length} nieuwe recepten succesvol geïmporteerd!`);
+              } else {
+                throw new Error('Ongeldig bestandsformaat. Verwacht een lijst van recepten.');
+              }
+            } catch (error) {
+              console.error('Fout bij het importeren van de recepten:', error);
+              alert(
+                'Fout bij het importeren van de recepten. Zorg ervoor dat het een geldige lijst van JSON-recepten is.'
+              );
+            }
+          };
+          reader.readAsText(file);
+        };
+
+        const createNewRecipe = () => {
+          setScrollPosition(0);
+          setEditingRecipe({
+            id: Date.now(),
+            name: '',
+            url: '',
+            ingredients: [''],
+            prepTime: 'kort',
+            difficulty: 'niet-moeilijk',
+            category: 'vlees',
+            carbType: 'anders',
+            kidFriendly: false,
+            makeAhead: false,
+            guestsFriendly: false,
+            cheatDay: false,
+            isFavorite: false,
+            weight: 0,
+            last_prepared_date: null,
+            instructions: '',
+            ovenTemp: '',
+            ovenTime: '',
+          });
+          setShowRecipeManager(false);
+        };
+
+        const editRecipe = (recipe, fromLastPlan = false) => {
+          if (recipeListRef.current) {
+            setScrollPosition(recipeListRef.current.scrollTop);
+          }
+          setEditingRecipe({ ...recipe });
+          if(fromLastPlan){
+            setShowLastPlan(false);
+            setLastPlanDropdownOpen(false);
+          } else {
+            setShowRecipeManager(false);
+          }
+        };
+
+        const saveRecipe = () => {
+            const isNew = !data.recipes.some(r => r.id === editingRecipe.id) && !data.newRecipes.some(r => r.id === editingRecipe.id);
+            if (!editingRecipe.name) {
+                alert("De naam van het recept is verplicht.");
+                return;
+            }
+            if (editingRecipe.ingredients.some(ing => ing.trim() === '')) {
+                alert("Alle ingrediënten moeten ingevuld zijn.");
+                return;
+            }
+
+            if (isNew) {
+                setData(prev => ({
+                    ...prev,
+                    recipes: [...prev.recipes, editingRecipe]
+                }));
+            } else {
+                setData(prev => ({
+                    ...prev,
+                    recipes: prev.recipes.map(r => r.id === editingRecipe.id ? editingRecipe : r),
+                    newRecipes: prev.newRecipes.map(r => r.id === editingRecipe.id ? editingRecipe : r)
+                }));
+            }
+            setEditingRecipe(null);
+            setShowRecipeManager(true);
+        };
+        
+        const closeEditScreen = () => {
+            setEditingRecipe(null);
+            setShowRecipeManager(true);
+        };
+
+        const deleteRecipe = (id, isNew) => {
+          if (window.confirm('Weet je zeker dat je dit recept wilt verwijderen?')) {
+            if (isNew) {
+              setData(prev => ({
+                ...prev,
+                newRecipes: prev.newRecipes.filter((r) => r.id !== id),
+              }));
+            } else {
+              setData(prev => ({
+                ...prev,
+                recipes: prev.recipes.filter((r) => r.id !== id),
+              }));
+            }
+          }
+        };
+
+        const moveNewRecipeToMain = (recipe) => {
+          setData((prev) => ({
+            ...prev,
+            recipes: [...prev.recipes, recipe],
+            newRecipes: prev.newRecipes.filter((r) => r.id !== recipe.id),
+          }));
+        };
+
+        const toggleFavorite = (id, isNew) => {
+          const updateList = (list) => list.map((r) => (r.id === id ? { ...r, isFavorite: !r.isFavorite } : r));
+
+          if (isNew) {
+            setData((prev) => ({
+              ...prev,
+              newRecipes: updateList(prev.newRecipes),
+            }));
+          } else {
+            setData((prev) => ({
+              ...prev,
+              recipes: updateList(prev.recipes),
+            }));
+          }
+        };
+
+        const removeIngredientFromRecipe = (index) => {
+          setEditingRecipe((prev) => {
+            const newIngredients = [...prev.ingredients];
+            newIngredients.splice(index, 1);
+            return { ...prev, ingredients: newIngredients };
+          });
+        };
+
+        const addIngredientToRecipe = (ingredient) => {
+          setEditingRecipe((prev) => ({
+            ...prev,
+            ingredients: [...prev.ingredients, ingredient.trim()],
+          }));
+        };
+
+        const shareWeekPlan = () => {
+          const planText = orderedDays
+            .map((day) => {
+              const recipe = weekPlan[day];
+              if (recipe) {
+                return `${day.charAt(0).toUpperCase() + day.slice(1)}: ${recipe.name}`;
+              }
+              return `${day.charAt(0).toUpperCase() + day.slice(1)}: (geen gerecht)`;
+            })
+            .join('\n');
+
+          const message = `Mijn weekplanning:\n\n${planText}\n\n*Gemaakt met mijn weekplanning app*`;
+          const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+          window.open(whatsappUrl, '_blank');
+        };
+
+        const handleToggleGuests = (day) => {
+          setDaySpecificSettings((prev) => ({
+            ...prev,
+            [day]: {
+              ...prev[day],
+              guests: !prev[day]?.guests,
+            },
+          }));
+        };
+
+        const handleRandomizeSingleDay = (day) => {
+          const isNewRecipeDay = data.settings.newRecipeDays.includes(day);
+          const isCheatDay = data.settings.cheatDayDays.includes(day);
+          const guestsFriendly = daySpecificSettings[day]?.guests;
+
+          let recipesToChooseFrom = allRecipes;
+
+          if (isNewRecipeDay) {
+            recipesToChooseFrom = recipesToChooseFrom.filter((r) =>
+              newRecipes.some((n) => n.id === r.id)
+            );
+          }
+          if (isCheatDay) {
+            recipesToChooseFrom = recipesToChooseFrom.filter((r) => r.cheatDay);
+          }
+          if (guestsFriendly) {
+            recipesToChooseFrom = recipesToChooseFrom.filter((r) => r.guestsFriendly);
+          }
+          
+          const currentPlanIds = new Set(
+            Object.values(weekPlan)
+              .filter((r) => r && r.id !== weekPlan[day]?.id)
+              .map((r) => r.id)
+          );
+          recipesToChooseFrom = recipesToChooseFrom.filter((r) => !currentPlanIds.has(r.id));
+
+          if (recipesToChooseFrom.length > 0) {
+            const randomIndex = Math.floor(Math.random() * recipesToChooseFrom.length);
+            const chosenRecipe = recipesToChooseFrom[randomIndex];
+            setWeekPlan((prev) => ({ ...prev, [day]: chosenRecipe }));
+          } else {
+            alert('Geen recepten beschikbaar om uit te kiezen met deze tags.');
+          }
+        };
+        
+        const handleManualRecipeSelect = (day, recipe) => {
+            const currentPlanIds = new Set(
+                Object.values(weekPlan)
+                    .filter((r) => r && r.id !== weekPlan[day]?.id)
+                    .map((r) => r.id)
+            );
+            
+            if (currentPlanIds.has(recipe.id)) {
+                alert('Dit recept is al in de weekplanning opgenomen. Kies een ander recept of verwijder het eerst van de andere dag.');
+                return;
+            }
+            
+            setWeekPlan(prev => ({ ...prev, [day]: recipe }));
+            setSortDropdownOpen(prev => ({ ...prev, [day]: false }));
+        };
+
+        const resetLastPreparedDates = () => {
+          if (
+            window.confirm('Weet je zeker dat je de datum van de laatst bereide gerechten wilt resetten?')
+          ) {
+            setData((prev) => ({
+              ...prev,
+              recipes: prev.recipes.map((r) => ({ ...r, last_prepared_date: null })),
+            }));
+            alert('De data is succesvol gereset.');
+          }
+        };
+
+        const sortRecipes = (list, sortBy) => {
+          switch (sortBy) {
+            case 'recent-gegeten':
+              return [...list].sort(
+                (a, b) => new Date(a.last_prepared_date || 0) - new Date(b.last_prepared_date || 0)
+              );
+            case 'favoriet':
+              return [...list].filter((r) => r.isFavorite);
+            case 'kort':
+              return [...list].filter((r) => r.prepTime === 'kort');
+            case 'lang':
+              return [...list].filter((r) => r.prepTime === 'lang');
+            case 'bestaand':
+              return [...list].filter((r) => !newRecipes.some((n) => n.id === r.id));
+            case 'nieuw':
+              return [...list].filter((r) => newRecipes.some((n) => n.id === r.id));
+            default:
+              if (categories.includes(sortBy)) {
+                return [...list].filter((r) => r.category === sortBy);
+              }
+              return list;
+          }
+        };
+        
+        const lastPlanItems = useMemo(() => {
+            if (!data.lastPlan.plan || !data.lastPlan.date) return [];
+            return Object.entries(data.lastPlan.plan)
+                .map(([day, recipe]) => recipe ? { day, recipe } : null)
+                .filter(Boolean);
+        }, [data.lastPlan]);
+
+        const legendItems = [
+          { label: 'Aanbieding', color: 'text-teal-600' },
+          { label: 'Seizoensgebonden', color: 'text-blue-600' },
+          { label: 'Kindvriendelijk', icon: '👶' },
+          { label: 'Voor gasten', icon: '👥' },
+          { label: 'Cheat day', icon: '🍕' },
+          { label: 'Nieuw recept', icon: '✨' },
+          { label: 'Favoriet', icon: '❤️' },
+          { label: 'Van tevoren te maken', icon: '🗓️' },
+        ];
+        
+        const RecipeCardInPlanner = ({ recipe, day, isAnimating }) => {
+            const saleSplitIndex = orderedDays.indexOf(data.settings.saleSplitDay.toLowerCase());
+            const dayIndex = orderedDays.indexOf(day.toLowerCase());
+            const saleIngredients =
+                dayIndex < saleSplitIndex
+                    ? data.settings.saleIngredientsPart1
+                    : data.settings.saleIngredientsPart2;
+            
+            const currentSeason = getSeason();
+            const seasonIngredients =
+                data.settings.seasonalIngredients[currentSeason] || [];
+
+            return (
+                <div
+                    className={`bg-gray-50 rounded-lg p-4 border border-gray-100 cursor-pointer ${isAnimating ? 'fly-away' : ''}`}
+                    onClick={() => setShowRecipeDetails(recipe)}
+                    draggable="true"
+                    onDragStart={(e) => handleDragStart(e, recipe, day)}
+                >
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-gray-900">{recipe.name}</h4>
+                            {recipe.url && (
+                                <a
+                                    href={recipe.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 hover:underline text-xs"
+                                    title="Bekijk recept online"
+                                >
+                                    (link)
+                                </a>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <span>{getDifficultyDisplay(recipe.difficulty)}</span>
+                            <span>{getTimeDisplay(recipe.prepTime)}</span>
+                            {recipe.kidFriendly && <span title="Kindvriendelijk">👶</span>}
+                            {recipe.guestsFriendly && <span title="Geschikt voor gasten">👥</span>}
+                            {recipe.cheatDay && <span title="Cheat day recept">🍕</span>}
+                            {newRecipes.some((r) => r.id === recipe.id) && (
+                                <span title="Nieuw recept">✨</span>
+                            )}
+                            {recipe.isFavorite && <span title="Favoriet recept">❤️</span>}
+                            {recipe.makeAhead && <span title="Van tevoren te maken">🗓️</span>}
+                        </div>
+                    </div>
+                    {recipe.last_prepared_date && (
+                        <span className="text-xs text-gray-400 block mt-1">
+                            Laatst bereid: {getFormattedDate(recipe.last_prepared_date)}
+                        </span>
+                    )}
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        {recipe.ingredients.map((ingredient, index) => {
+                            const isOnSale = saleIngredients.includes(ingredient.toLowerCase());
+                            const isSeasonal =
+                                data.settings.seasonalToggle &&
+                                seasonIngredients.includes(ingredient.toLowerCase());
+                            return (
+                                <span
+                                    key={index}
+                                    className={
+                                        isOnSale
+                                            ? 'text-teal-600 font-medium'
+                                            : isSeasonal
+                                                ? 'text-blue-600 font-medium'
+                                                : ''
+                                    }
+                                >
+                                    {ingredient}
+                                    {index < recipe.ingredients.length - 1 ? ', ' : ''}
+                                </span>
+                            );
+                        })}
+                    </p>
+                    <div className="mt-2 text-right flex gap-2 justify-end">
+                        <div className="relative">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    movingRecipe && movingRecipe.sourceDay === day ? setMovingRecipe(null) : handleStartMove(recipe, day);
+                                }}
+                                className={`text-xs px-2 py-1 rounded-lg transition-colors flex items-center gap-1 ${
+                                    movingRecipe && movingRecipe.sourceDay === day ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                                title="Verplaats recept"
+                            >
+                                <GripHorizontal className="w-3 h-3"/> Verplaats
+                                {movingRecipe && movingRecipe.sourceDay === day ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
+                            {movingRecipe && movingRecipe.sourceDay === day && (
+                                <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                    {orderedDays
+                                        .filter(d => d !== day && !lockedDays.includes(d))
+                                        .map(d => (
+                                            <button
+                                                key={d}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMoveToDay(d);
+                                                }}
+                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 capitalize hover:bg-gray-100"
+                                            >
+                                                Naar {d}
+                                            </button>
+                                        ))}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                editRecipe(recipe);
+                            }}
+                            className="text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors flex items-center gap-1 ml-auto"
+                        >
+                            <Edit className="w-3 h-3"/> Bewerken
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+        
+        const LastPlanRecipeCard = ({ recipe }) => {
+            return (
+                <div className="flex flex-col p-3 border rounded-lg bg-gray-50">
+                    <span className="font-semibold text-gray-800 capitalize">{recipe.name}</span>
+                    <div className="flex gap-2 mt-2">
+                         <button
+                            onClick={() => {
+                                setLastPlanDropdownOpen(false);
+                                setShowRecipeDetails(recipe);
+                            }}
+                            className="text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors"
+                        >
+                            Bekijk recept
+                        </button>
+                        <button
+                            onClick={() => {
+                                editRecipe(recipe, true);
+                            }}
+                            className="text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors flex items-center gap-1"
+                        >
+                            <Edit className="w-3 h-3"/> Bewerken
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+        
+
+        return (
+          <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+            <div className="max-w-4xl mx-auto">
+              <header className="mb-6 text-center">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">🍽️ Week Planning App</h1>
+                <p className="text-gray-600">Jouw persoonlijke assistent voor weekmenu's</p>
+              </header>
+              <div className="flex justify-center flex-wrap gap-2 mb-6">
+                <button
+                  onClick={() => { setShowSettings(!showSettings); setShowRecipeManager(false); setShowShoppingList(false); setShowHistory(false); setLastPlanDropdownOpen(false); setShowLastPlan(false); }}
+                  className="flex-1 sm:flex-auto px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                >
+                  <Settings className="w-4 h-4"/> Instellingen
+                </button>
+                <button
+                  onClick={() => { setShowRecipeManager(!showRecipeManager); setShowSettings(false); setShowShoppingList(false); setShowHistory(false); setLastPlanDropdownOpen(false); setShowLastPlan(false); }}
+                  className="flex-1 sm:flex-auto px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                >
+                  <ListTodo className="w-4 h-4"/> Recepten beheren
+                </button>
+                <button
+                  onClick={() => { setShowShoppingList(true); setShowSettings(false); setShowRecipeManager(false); setShowHistory(false); setLastPlanDropdownOpen(false); setShowLastPlan(false); }}
+                  className="flex-1 sm:flex-auto px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                >
+                  <ShoppingCart className="w-4 h-4"/> Boodschappenlijst
+                </button>
+                <button
+                  onClick={() => { setShowHistory(true); setShowSettings(false); setShowRecipeManager(false); setShowShoppingList(false); setLastPlanDropdownOpen(false); setShowLastPlan(false); }}
+                  className="flex-1 sm:flex-auto px-4 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                >
+                  <History className="w-4 h-4"/> Geschiedenis
+                </button>
+                 <div className="relative flex-1 sm:flex-auto" ref={lastPlanDropdownRef}>
+                    <button
+                        onClick={() => {
+                            setLastPlanDropdownOpen(!lastPlanDropdownOpen);
+                            setShowSettings(false);
+                            setShowRecipeManager(false);
+                            setShowShoppingList(false);
+                            setShowHistory(false);
+                        }}
+                        className={`w-full px-4 py-2 bg-rose-500 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2 text-sm
+                            ${!data.lastPlan.date ? "opacity-50 cursor-not-allowed" : "hover:bg-rose-600"}`}
+                        disabled={!data.lastPlan.date}
+                        title={!data.lastPlan.date ? "Er is nog geen planning definitief gemaakt." : ""}
+                    >
+                        <ClipboardCheck className="w-4 h-4" /> Laatste Planning
+                        {lastPlanDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                    {lastPlanDropdownOpen && (
+                        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
+                            <div className="p-2 space-y-2">
+                                <p className="text-xs text-gray-500 px-2 py-1">Gemaakt op: {getFormattedDate(data.lastPlan.date)}</p>
+                                {lastPlanItems.map(({ day, recipe }) => (
+                                    <div key={day} className="w-full text-left px-3 py-2 text-sm text-gray-700 capitalize hover:bg-gray-100 flex justify-between items-center">
+                                      <span onClick={() => { setShowRecipeDetails(recipe); setLastPlanDropdownOpen(false); }}>
+                                        {day}: {recipe.name}
+                                      </span>
+                                      <button
+                                        onClick={() => editRecipe(recipe, true)}
+                                        className="text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors"
+                                        title="Bewerken"
+                                      >
+                                        <Edit className="w-3 h-3"/>
+                                      </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+              </div>
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <button onClick={() => setShowLegend(!showLegend)} className="flex items-center justify-between w-full font-semibold text-gray-700">
+                  <span>Legenda</span>
+                  <span>{showLegend ? '▲' : '▼'}</span>
+                </button>
+                <div className={`dropdown-content ${showLegend ? 'open' : ''}`}>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                    {legendItems.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        {item.icon && <span className="text-gray-600">{item.icon}</span>}
+                        {item.color && (
+                          <div
+                            className={`w-3 h-3 rounded-full ${item.color.replace('text-', 'bg-')}`}
+                          ></div>
+                        )}
+                        <span className="text-gray-800">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {showSettings && (
+              <div className="mb-6 p-6 bg-rose-50 rounded-xl border border-gray-100 max-w-4xl mx-auto">
+                <h3 className="text-lg font-semibold mb-6 text-gray-900">Instellingen</h3>
+                <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="col-span-full md:col-span-1">
+                    <h4 className="font-medium mb-2">Aanbiedings-/voorkeursingrediënten weekdeel 1:</h4>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newSaleIngredient1}
+                        onChange={(e) => setNewSaleIngredient1(e.target.value)}
+                        placeholder="Bijv. gehakt, broccoli"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        onKeyPress={(e) =>
+                          e.key === 'Enter' &&
+                          (() => {
+                            if (newSaleIngredient1.trim()) {
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  saleIngredientsPart1: [
+                                    ...prev.settings.saleIngredientsPart1,
+                                    newSaleIngredient1.trim().toLowerCase(),
+                                  ],
+                                },
+                              }));
+                              setNewSaleIngredient1('');
+                            }
+                          })()
+                        }
+                      />
+                      <button
+                        onClick={() => {
+                          if (newSaleIngredient1.trim()) {
+                            setData((prev) => ({
+                              ...prev,
+                              settings: {
+                                ...prev.settings,
+                                saleIngredientsPart1: [
+                                  ...prev.settings.saleIngredientsPart1,
+                                  newSaleIngredient1.trim().toLowerCase(),
+                                ],
+                              },
+                            }));
+                            setNewSaleIngredient1('');
+                          }
+                        }}
+                        className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.settings.saleIngredientsPart1.map((ingredient, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-800 rounded-full text-xs"
+                        >
+                          {ingredient}
+                          <button
+                            onClick={() =>
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  saleIngredientsPart1: prev.settings.saleIngredientsPart1.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                },
+                              }))
+                            }
+                            className="hover:text-rose-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-span-full md:col-span-1">
+                    <h4 className="font-medium mb-2">Aanbiedings-/voorkeursingrediënten weekdeel 2:</h4>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newSaleIngredient2}
+                        onChange={(e) => setNewSaleIngredient2(e.target.value)}
+                        placeholder="Bijv. gehakt, broccoli"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        onKeyPress={(e) =>
+                          e.key === 'Enter' &&
+                          (() => {
+                            if (newSaleIngredient2.trim()) {
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  saleIngredientsPart2: [
+                                    ...prev.settings.saleIngredientsPart2,
+                                    newSaleIngredient2.trim().toLowerCase(),
+                                  ],
+                                },
+                              }));
+                              setNewSaleIngredient2('');
+                            }
+                          })()
+                        }
+                      />
+                      <button
+                        onClick={() => {
+                          if (newSaleIngredient2.trim()) {
+                            setData((prev) => ({
+                              ...prev,
+                              settings: {
+                                ...prev.settings,
+                                saleIngredientsPart2: [
+                                  ...prev.settings.saleIngredientsPart2,
+                                  newSaleIngredient2.trim().toLowerCase(),
+                                ],
+                              },
+                            }));
+                            setNewSaleIngredient2('');
+                          }
+                        }}
+                        className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.settings.saleIngredientsPart2.map((ingredient, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-teal-100 text-teal-800 rounded-full text-xs"
+                        >
+                          {ingredient}
+                          <button
+                            onClick={() =>
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  saleIngredientsPart2: prev.settings.saleIngredientsPart2.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                },
+                              }))
+                            }
+                            className="hover:text-rose-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Te vermijden ingrediënten:</h4>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={newAvoidIngredient}
+                        onChange={(e) => setNewAvoidIngredient(e.target.value)}
+                        placeholder="Bijv. kip, vis"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        onKeyPress={(e) =>
+                          e.key === 'Enter' &&
+                          (() => {
+                            if (newAvoidIngredient.trim()) {
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  avoidIngredients: [
+                                    ...prev.settings.avoidIngredients,
+                                    newAvoidIngredient.trim().toLowerCase(),
+                                  ],
+                                },
+                              }));
+                              setNewAvoidIngredient('');
+                            }
+                          })()
+                        }
+                      />
+                      <button
+                        onClick={() => {
+                          if (newAvoidIngredient.trim()) {
+                            setData((prev) => ({
+                              ...prev,
+                              settings: {
+                                ...prev.settings,
+                                avoidIngredients: [
+                                  ...prev.settings.avoidIngredients,
+                                  newAvoidIngredient.trim().toLowerCase(),
+                                ],
+                              },
+                            }));
+                            setNewAvoidIngredient('');
+                          }
+                        }}
+                        className="px-3 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {data.settings.avoidIngredients.map((ingredient, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs"
+                        >
+                          {ingredient}
+                          <button
+                            onClick={() =>
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  avoidIngredients: prev.settings.avoidIngredients.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                },
+                              }))
+                            }
+                            className="hover:text-rose-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Favoriete recepten bonus:</h4>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="20"
+                          value={data.settings.favoriteBonus}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              settings: { ...prev.settings, favoriteBonus: parseInt(e.target.value) },
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="w-10 text-center text-sm font-medium">
+                          {data.settings.favoriteBonus}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Hogere waarde = grotere kans dat favorieten gekozen worden.
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Bonus voor recent gemaakte gerechten:</h4>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min="0"
+                          max="20"
+                          value={data.settings.recentBonus}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              settings: { ...prev.settings, recentBonus: parseInt(e.target.value) },
+                            }))
+                          }
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                        <span className="w-10 text-center text-sm font-medium">
+                          {data.settings.recentBonus}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Stel in hoe sterk de voorkeur is voor gerechten die al even niet gemaakt zijn. Hoger
+                        = betere kans.
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Startdag van de week:</h4>
+                      <select
+                        value={data.settings.startDayOfWeek}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            settings: { ...prev.settings, startDayOfWeek: e.target.value },
+                          }))
+                        }
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm capitalize"
+                      >
+                        {days.map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Splitsingsdag voor aanbiedingen:</h4>
+                      <select
+                        value={data.settings.saleSplitDay}
+                        onChange={(e) =>
+                          setData((prev) => ({
+                            ...prev,
+                            settings: { ...prev.settings, saleSplitDay: e.target.value },
+                          }))
+                        }
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm capitalize"
+                      >
+                        {days.map((day) => (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="flex items-center gap-2 mt-2">
+                        <input
+                          type="checkbox"
+                          checked={data.settings.seasonalToggle}
+                          onChange={(e) =>
+                            setData((prev) => ({
+                              ...prev,
+                              settings: { ...prev.settings, seasonalToggle: e.target.checked },
+                            }))
+                          }
+                          className="rounded"
+                        />
+                        <span className="text-sm font-medium">
+                          Seizoensgebonden recepten een voorkeur geven
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="col-span-full">
+                    <h4 className="font-medium mb-2">Seizoensgebonden ingrediënten:</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.keys(data.settings.seasonalIngredients).map((season) => (
+                        <div key={season}>
+                          <h5 className="text-sm font-medium text-gray-600 capitalize mb-1">
+                            {season}
+                          </h5>
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {data.settings.seasonalIngredients[season].map((ingredient, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                              >
+                                {ingredient}
+                                <button
+                                  onClick={() => {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      settings: {
+                                        ...prev.settings,
+                                        seasonalIngredients: {
+                                          ...prev.settings.seasonalIngredients,
+                                          [season]: prev.settings.seasonalIngredients[season].filter(
+                                            (_, i) => i !== index
+                                          ),
+                                        },
+                                      },
+                                    }));
+                                  }}
+                                  className="hover:text-rose-600"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              placeholder={`Nieuw ${season} ingrediënt...`}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && e.target.value.trim()) {
+                                  const ingredient = e.target.value.trim().toLowerCase();
+                                  setData((prev) => ({
+                                    ...prev,
+                                    settings: {
+                                      ...prev.settings,
+                                      seasonalIngredients: {
+                                        ...prev.settings.seasonalIngredients,
+                                        [season]: [...prev.settings.seasonalIngredients[season], ingredient],
+                                      },
+                                    },
+                                  }));
+                                  e.target.value = '';
+                                }
+                              }}
+                              className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Dagen kinderen eten mee:</h4>
+                    <div className="space-y-1">
+                      {days.map((day) => (
+                        <label key={day} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={data.settings.kidsEatDays.includes(day)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setData((prev) => ({
+                                  ...prev,
+                                  settings: { ...prev.settings, kidsEatDays: [...prev.settings.kidsEatDays, day] },
+                                }));
+                              } else {
+                                setData((prev) => ({
+                                  ...prev,
+                                  settings: {
+                                    ...prev.settings,
+                                    kidsEatDays: prev.settings.kidsEatDays.filter((d) => d !== day),
+                                  },
+                                }));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm capitalize">{day}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Tijdvoorkeur per dag:</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {days.map((day) => (
+                        <div key={day} className="text-sm">
+                          <label className="block capitalize font-medium mb-1">{day}</label>
+                          <select
+                            value={data.settings.dayPreferences[day]}
+                            onChange={(e) =>
+                              setData((prev) => ({
+                                ...prev,
+                                settings: {
+                                  ...prev.settings,
+                                  dayPreferences: { ...prev.settings.dayPreferences, [day]: e.target.value },
+                                },
+                              }))
+                            }
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+                          >
+                            <option value="kort">Kort</option>
+                            <option value="lang">Lang</option>
+                            <option value="maakt-niet-uit">Maakt niet uit</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-span-full">
+                    <h4 className="font-medium mb-2">Cheat days en Nieuwe recepten dagen:</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h5 className="font-medium mb-2 text-gray-600">Cheat Days</h5>
+                        <div className="space-y-1">
+                          {days.map((day) => (
+                            <label key={day} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={data.settings.cheatDayDays.includes(day)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      settings: {
+                                        ...prev.settings,
+                                        cheatDayDays: [...prev.settings.cheatDayDays, day],
+                                      },
+                                    }));
+                                  } else {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      settings: {
+                                        ...prev.settings,
+                                        cheatDayDays: prev.settings.cheatDayDays.filter(
+                                          (d) => d !== day
+                                        ),
+                                      },
+                                    }));
+                                  }
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm capitalize">{day}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h5 className="font-medium mb-2 text-gray-600">Nieuwe Recept Dagen</h5>
+                        <div className="space-y-1">
+                          {days.map((day) => (
+                            <label key={day} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={data.settings.newRecipeDays.includes(day)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      settings: {
+                                        ...prev.settings,
+                                        newRecipeDays: [...prev.settings.newRecipeDays, day],
+                                      },
+                                    }));
+                                  } else {
+                                    setData((prev) => ({
+                                      ...prev,
+                                      settings: {
+                                        ...prev.settings,
+                                        newRecipeDays: prev.settings.newRecipeDays.filter(
+                                          (d) => d !== day
+                                        ),
+                                      },
+                                    }));
+                                  }
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm capitalize">{day}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-6 flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={exportData}
+                    className="flex-1 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600"
+                    title="Exporteer recepten en instellingen"
+                  >
+                    <Download className="h-4 w-4" /> Exporteer
+                  </button>
+                  <label
+                    className="flex-1 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600"
+                    title="Importeer recepten en instellingen"
+                  >
+                    <Upload className="h-4 w-4" /> Importeer{' '}
+                    <input type="file" accept=".json" onChange={importData} className="hidden" />
+                  </label>
+                  <button
+                    onClick={saveDataToLocalStorage}
+                    className="flex-1 p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600"
+                    title="Forceer het lokaal opslaan van alle data"
+                  >
+                    <Save className="h-4 w-4" /> Forceer Opslaan
+                  </button>
+                </div>
+                <div className="mt-4 flex flex-col items-center justify-center p-3 bg-white rounded-lg border border-gray-200 text-sm">
+                  <h4 className="font-medium mb-2 text-center text-gray-700">
+                    Importeer nieuwe recepten (voegt toe)
+                  </h4>
+                  <label
+                    className="p-2 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200 text-sm flex justify-center items-center gap-2 font-medium text-emerald-600"
+                    title="Importeer een nieuwe receptenlijst"
+                  >
+                    <Plus className="h-4 w-4" /> Importeer{' '}
+                    <input type="file" accept=".json" onChange={importNewRecipes} className="hidden" />
+                  </label>
+                  {newRecipes.length > 0 && (
+                    <span className="mt-2 text-xs text-gray-500">
+                      {newRecipes.length} nieuwe recepten geladen.
+                    </span>
+                  )}
+                </div>
+                <div className="mt-4 flex flex-col items-center justify-center p-3 bg-white rounded-lg border border-gray-200 text-sm">
+                  <h4 className="font-medium mb-2 text-center text-gray-700">
+                    Recent gemaakte recepten resetten
+                  </h4>
+                  <button
+                    onClick={resetLastPreparedDates}
+                    className="p-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200 text-sm flex justify-center items-center gap-2 font-medium text-rose-600"
+                  >
+                    <Calendar className="h-4 w-4" /> Reset Data
+                  </button>
+                </div>
+              </div>
+            )}
+            {showHistory && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">
+                      Visuele Geschiedenis (Laatste 2 Weken)
+                    </h3>
+                    <button
+                      onClick={() => setShowHistory(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {history.length > 0 ? (
+                      history.map((item, index) => (
+                        <div key={index} className="flex flex-col p-3 border rounded-lg bg-gray-50">
+                          <span className="font-semibold text-gray-800">{item.name}</span>
+                          <span className="text-sm text-gray-500">{getFormattedDate(item.date)}</span>
+                          <span className="text-xs text-gray-400 capitalize">{item.category}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="col-span-2 text-gray-500 italic text-center">
+                        Nog geen geschiedenis om te tonen.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {showRecipeManager && (
+              <div className="mb-6 p-6 bg-rose-50 rounded-xl border border-gray-100 max-w-4xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Receptbeheer ({allRecipes.length})
+                  </h3>
+                  <button
+                    onClick={createNewRecipe}
+                    className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" /> Nieuw Recept
+                  </button>
+                </div>
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Zoek recepten op naam..."
+                    value={recipeSearch}
+                    onChange={(e) => setRecipeSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                </div>
+                <div ref={recipeListRef} className="max-h-[60vh] overflow-y-auto">
+                {Object.keys(groupedMainRecipes).length > 0 && (
+                  <>
+                    <h4 className="font-medium text-gray-700 mb-3 capitalize border-b border-gray-200 pb-2">
+                      {' '}
+                      Mijn Recepten ({recipes.length}){' '}
+                    </h4>
+                    <div className="space-y-2 mb-6">
+                      {Object.entries(groupedMainRecipes)
+                        .sort()
+                        .map(([category, recipes]) => (
+                          <div key={category} className="mb-4">
+                            <h5 className="text-sm font-semibold text-gray-500 mb-2 capitalize">
+                              {category}
+                            </h5>
+                            <div className="space-y-2">
+                              {recipes.map((recipe) => (
+                                <div
+                                  key={recipe.id}
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                                >
+                                  <div className="flex-1">
+                                    <span className="text-sm font-medium text-gray-900">
+                                      {recipe.name}
+                                    </span>
+                                    {recipe.last_prepared_date && (
+                                      <span className="text-xs text-gray-400 block mt-1">
+                                        {' '}
+                                        Laatst bereid: {getFormattedDate(recipe.last_prepared_date)}{' '}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2 items-center">
+                                    <button
+                                      onClick={() => toggleFavorite(recipe.id, false)}
+                                      className={`w-8 h-8 rounded-full transition-colors flex items-center justify-center ${
+                                        recipe.isFavorite ? 'bg-amber-100 text-amber-700' : 'text-gray-400 hover:text-amber-700'
+                                      }`}
+                                      title={
+                                        recipe.isFavorite ? 'Verwijder van favorieten' : 'Voeg toe aan favorieten'
+                                      }
+                                    >
+                                      {recipe.isFavorite ? '❤️' : '♡'}
+                                    </button>
+                                    <button
+                                      onClick={() => editRecipe(recipe)}
+                                      className="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs hover:bg-rose-200 transition-colors"
+                                    >
+                                      {' '}
+                                      Bewerk{' '}
+                                    </button>
+                                    <button
+                                      onClick={() => deleteRecipe(recipe.id, false)}
+                                      className="p-1 text-rose-500 hover:text-rose-700"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </>
+                )}
+                {Object.keys(groupedNewRecipes).length > 0 && (
+                  <>
+                    <h4 className="font-medium text-gray-700 mb-3 capitalize border-b border-gray-200 pb-2">
+                      {' '}
+                      Nieuwe Recepten ({newRecipes.length}){' '}
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(groupedNewRecipes)
+                        .sort()
+                        .map(([category, recipes]) => (
+                          <div key={category} className="mb-4">
+                            <h5 className="text-sm font-semibold text-gray-500 mb-2 capitalize">
+                              {category}
+                            </h5>
+                            <div className="space-y-2">
+                              {recipes.map((recipe) => (
+                                <div
+                                  key={recipe.id}
+                                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                                >
+                                  <div className="flex-1">
+                                    <span className="text-sm font-medium text-gray-900">
+                                      {recipe.name}
+                                    </span>
+                                    {recipe.last_prepared_date && (
+                                      <span className="text-xs text-gray-400 block mt-1">
+                                        {' '}
+                                        Laatst bereid: {getFormattedDate(recipe.last_prepared_date)}{' '}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => editRecipe(recipe)}
+                                      className="px-3 py-1 bg-rose-100 text-rose-700 rounded-lg text-xs hover:bg-rose-200 transition-colors"
+                                    >
+                                      {' '}
+                                      Bewerk{' '}
+                                    </button>
+                                    <button
+                                      onClick={() => moveNewRecipeToMain(recipe)}
+                                      className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs hover:bg-emerald-200 transition-colors"
+                                    >
+                                      {' '}
+                                      Verplaats <ArrowRight className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => deleteRecipe(recipe.id, true)}
+                                      className="p-1 text-rose-500 hover:text-rose-700"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </>
+                )}
+                </div>
+              </div>
+            )}
+            {editingRecipe && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">
+                      {allRecipes.find((r) => r.id === editingRecipe.id)
+                        ? 'Bewerk Recept'
+                        : 'Nieuw Recept'}
+                    </h3>
+                    <button
+                      onClick={closeEditScreen}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Naam *</label>
+                      <input
+                        type="text"
+                        value={editingRecipe.name}
+                        onChange={(e) => setEditingRecipe((prev) => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="Bijv. Spaghetti Bolognese"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">URL (optioneel)</label>
+                      <input
+                        type="text"
+                        value={editingRecipe.url || ''}
+                        onChange={(e) => setEditingRecipe((prev) => ({ ...prev, url: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="https://www.lekkerensimpel.com/mijn-recept"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Bereidingstijd</label>
+                        <select
+                          value={editingRecipe.prepTime}
+                          onChange={(e) => setEditingRecipe((prev) => ({ ...prev, prepTime: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="kort">Kort (tot 30 min)</option>
+                          <option value="lang">Lang (meer dan 30 min)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Moeilijkheid</label>
+                        <select
+                          value={editingRecipe.difficulty}
+                          onChange={(e) =>
+                            setEditingRecipe((prev) => ({ ...prev, difficulty: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="niet-moeilijk">Niet moeilijk</option>
+                          <option value="moeilijk">Moeilijk</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Categorie</label>
+                        <select
+                          value={editingRecipe.category}
+                          onChange={(e) => setEditingRecipe((prev) => ({ ...prev, category: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Koolhydraattype</label>
+                        <select
+                          value={editingRecipe.carbType}
+                          onChange={(e) => setEditingRecipe((prev) => ({ ...prev, carbType: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        >
+                          {carbTypes.map((carb) => (
+                            <option key={carb} value={carb}>
+                              {carb}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Weging</label>
+                        <input
+                          type="number"
+                          min="-10"
+                          max="10"
+                          value={editingRecipe.weight}
+                          onChange={(e) =>
+                            setEditingRecipe((prev) => ({ ...prev, weight: parseInt(e.target.value) }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Hoger = grotere kans, lager = kleinere kans
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editingRecipe.kidFriendly}
+                            onChange={(e) =>
+                              setEditingRecipe((prev) => ({ ...prev, kidFriendly: e.target.checked }))
+                            }
+                          />
+                          <span className="text-sm">Kindvriendelijk</span>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editingRecipe.makeAhead}
+                            onChange={(e) =>
+                              setEditingRecipe((prev) => ({ ...prev, makeAhead: e.target.checked }))
+                            }
+                          />
+                          <span className="text-sm">Van tevoren te maken</span>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editingRecipe.guestsFriendly}
+                            onChange={(e) =>
+                              setEditingRecipe((prev) => ({ ...prev, guestsFriendly: e.target.checked }))
+                            }
+                          />
+                          <span className="text-sm">Geschikt voor gasten</span>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editingRecipe.cheatDay}
+                            onChange={(e) =>
+                              setEditingRecipe((prev) => ({ ...prev, cheatDay: e.target.checked }))
+                            }
+                          />
+                          <span className="text-sm">Is cheat day recept</span>
+                        </label>
+                      </div>
+                      <div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={editingRecipe.isFavorite}
+                            onChange={(e) =>
+                              setEditingRecipe((prev) => ({ ...prev, isFavorite: e.target.checked }))
+                            }
+                          />
+                          <span className="text-sm">Is favoriet recept</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Ingrediënten *</label>
+                      <div className="space-y-2">
+                        {editingRecipe.ingredients.map((ingredient, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={ingredient}
+                              onChange={(e) => {
+                                const newIngredients = [...editingRecipe.ingredients];
+                                newIngredients[index] = e.target.value;
+                                setEditingRecipe((prev) => ({ ...prev, ingredients: newIngredients }));
+                              }}
+                              className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                              placeholder="Bijv. gehakt, ui, knoflook"
+                            />
+                            <button
+                              onClick={() => removeIngredientFromRecipe(index)}
+                              className="p-1 text-rose-500 hover:text-rose-700"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Nieuw ingrediënt toevoegen..."
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && e.target.value.trim()) {
+                                addIngredientToRecipe(e.target.value);
+                                e.target.value = '';
+                              }
+                            }}
+                            className="flex-1 px-3 py-1 border border-gray-300 rounded text-sm"
+                          />
+                          <button
+                            onClick={(e) => {
+                              const input = e.target.parentNode.querySelector('input');
+                              if (input.value.trim()) {
+                                addIngredientToRecipe(input.value);
+                                input.value = '';
+                              }
+                            }}
+                            className="p-1 text-teal-500 hover:text-teal-700"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Bereidingswijze</label>
+                      <textarea
+                        value={editingRecipe.instructions || ''}
+                        onChange={(e) =>
+                          setEditingRecipe((prev) => ({ ...prev, instructions: e.target.value }))
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        rows="4"
+                        placeholder="Beschrijf hier de stappen..."
+                      ></textarea>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Oventemperatuur (°C)</label>
+                        <input
+                          type="text"
+                          value={editingRecipe.ovenTemp || ''}
+                          onChange={(e) =>
+                            setEditingRecipe((prev) => ({ ...prev, ovenTemp: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Bijv. 180"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Oventijd (minuten)</label>
+                        <input
+                          type="text"
+                          value={editingRecipe.ovenTime || ''}
+                          onChange={(e) =>
+                            setEditingRecipe((prev) => ({ ...prev, ovenTime: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Bijv. 30"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-4">
+                      <button
+                        onClick={saveRecipe}
+                        className="flex items-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 font-medium"
+                      >
+                        <Save className="h-4 w-4" />{' '}
+                        {allRecipes.find((r) => r.id === editingRecipe.id)
+                          ? 'Opslaan'
+                          : 'Recept Toevoegen'}
+                      </button>
+                      <button
+                        onClick={closeEditScreen}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 font-medium"
+                      >
+                        {' '}
+                        Annuleren{' '}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {showRecipeDetails && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">{showRecipeDetails.name}</h3>
+                    <button
+                      onClick={() => setShowRecipeDetails(null)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-4 text-gray-700">
+                    {showRecipeDetails.url && (
+                      <p className="text-sm">
+                        <a
+                          href={showRecipeDetails.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          Bekijk het recept online
+                        </a>
+                      </p>
+                    )}
+                    <div className="flex gap-4 flex-wrap text-sm">
+                      <div>
+                        <span className="font-medium">Bereidingstijd:</span>{' '}
+                        {getTimeDisplay(showRecipeDetails.prepTime)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Moeilijkheid:</span>{' '}
+                        {getDifficultyDisplay(showRecipeDetails.difficulty)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Categorie:</span> {showRecipeDetails.category}
+                      </div>
+                      <div>
+                        <span className="font-medium">Koolhydraattype:</span> {showRecipeDetails.carbType}
+                      </div>
+                    </div>
+                    <div className="mt-2 text-sm">
+                      <span className="font-medium">Ingrediënten:</span>{' '}
+                      {showRecipeDetails.ingredients.join(', ')}
+                    </div>
+                    {showRecipeDetails.instructions && (
+                      <div className="mt-4">
+                        <h4 className="font-medium">Bereidingswijze:</h4>
+                        <p className="whitespace-pre-wrap text-sm">{showRecipeDetails.instructions}</p>
+                      </div>
+                    )}
+                    {(showRecipeDetails.ovenTemp || showRecipeDetails.ovenTime) && (
+                      <div className="mt-4">
+                        <h4 className="font-medium">Oveninformatie:</h4>
+                        {showRecipeDetails.ovenTemp && (
+                          <p className="text-sm">Temperatuur: {showRecipeDetails.ovenTemp}°C</p>
+                        )}
+                        {showRecipeDetails.ovenTime && (
+                          <p className="text-sm">Tijd: {showRecipeDetails.ovenTime} min</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {showShoppingList && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Boodschappenlijst</h3>
+                    <button
+                      onClick={() => setShowShoppingList(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(getShoppingList()).length > 0 ? (
+                      Object.entries(getShoppingList()).map(([ingredient, count]) => (
+                        <div key={ingredient} className="flex items-center gap-2">
+                          <span className="text-sm">{ingredient}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 italic">De boodschappenlijst is leeg.</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const listText = Object.keys(getShoppingList())
+                        .map((ing) => `- ${ing}`)
+                        .join('\n');
+                      navigator.clipboard
+                        .writeText(listText)
+                        .then(() => alert('Boodschappenlijst gekopieerd naar klembord!'))
+                        .catch((err) => console.error('Kopieerfout:', err));
+                    }}
+                    className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 font-medium"
+                  >
+                    <Check className="h-4 w-4" /> Kopieer lijst
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3 mb-6 flex-wrap">
+              <button
+                onClick={generateWeekPlan}
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+              >
+                <Calendar className="h-4 w-4" /> Genereer Planning
+              </button>
+              <button
+                onClick={finalizeWeekPlan}
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+              >
+                <Check className="h-4 w-4" /> Maak Schema Definitief
+              </button>
+              <button
+                onClick={shareWeekPlan}
+                className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors font-medium"
+              >
+                <Share className="h-4 w-4" /> Deel Planning
+              </button>
+            </div>
+            <div className="space-y-4">
+              {orderedDays.map((day) => (
+                <div
+                  key={day}
+                  className="border border-gray-200 rounded-xl p-4 bg-white"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, day)}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-medium capitalize text-gray-900">{day}</h3>
+                    <div className="flex items-center gap-2">
+                       <button
+                          onClick={() => toggleLockDay(day)}
+                          className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                              lockedDays.includes(day)
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          }`}
+                          title="Vergrendel dag"
+                      >
+                          {lockedDays.includes(day) ? '🔒' : '🔓'}
+                      </button>
+                      <button
+                        onClick={() => handleToggleGuests(day)}
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                          daySpecificSettings[day]?.guests
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                        title="Gasten eten mee"
+                      >
+                        👥
+                      </button>
+                      <button
+                        onClick={() => {
+                           setData((prev) => ({
+                            ...prev,
+                            settings: {
+                              ...prev.settings,
+                              cheatDayDays: prev.settings.cheatDayDays.includes(day)
+                                ? prev.settings.cheatDayDays.filter((d) => d !== day)
+                                : [...prev.settings.cheatDayDays, day],
+                            },
+                          }));
+                        }}
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                          data.settings.cheatDayDays.includes(day)
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                        title="Cheat day"
+                      >
+                        🍕
+                      </button>
+                      <button
+                        onClick={() => {
+                          setData((prev) => ({
+                            ...prev,
+                            settings: {
+                              ...prev.settings,
+                              newRecipeDays: prev.settings.newRecipeDays.includes(day)
+                                ? prev.settings.newRecipeDays.filter((d) => d !== day)
+                                : [...prev.settings.newRecipeDays, day],
+                            },
+                          }));
+                        }}
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                          data.settings.newRecipeDays.includes(day)
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                        title="Probeer een nieuw recept"
+                      >
+                        ✨
+                      </button>
+                      <button
+                        onClick={() => handleRandomizeSingleDay(day)}
+                        disabled={lockedDays.includes(day)}
+                        className={`px-3 py-1.5 hover:bg-gray-100 text-gray-700 rounded-lg text-xs transition-colors border border-gray-200 ${
+                          lockedDays.includes(day) ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        title="Willekeurig gerecht"
+                      >
+                        {' '}
+                        Willekeurig{' '}
+                      </button>
+                    </div>
+                  </div>
+                  {weekPlan[day] ? (
+                    <RecipeCardInPlanner recipe={weekPlan[day]} day={day} isAnimating={animatingDays.includes(day)} />
+                  ) : (
+                    <div className="text-gray-500 italic text-sm py-4 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                      {' '}
+                      Nog geen gerecht geselecteerd{' '}
+                    </div>
+                  )}
+                  <div className="mt-3 relative" ref={el => sortDropdownRefs.current[day] = el}>
+                    <button
+                        onClick={() => setSortDropdownOpen(prev => ({ ...prev, [day]: !prev[day] }))}
+                        className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-200 rounded-lg text-xs bg-white text-gray-700"
+                    >
+                        Handmatig recept kiezen
+                        {sortDropdownOpen[day] ? <ChevronUp className="h-4 w-4 text-gray-500" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
+                    </button>
+                    {sortDropdownOpen[day] && (
+                        <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
+                            {Object.entries(groupedRecipesByCategory).sort().map(([category, recipes]) => (
+                                <div key={category}>
+                                    <h5 className="px-3 py-2 text-sm font-semibold text-gray-500 capitalize bg-gray-100 sticky top-0">{category}</h5>
+                                    {recipes.map(recipe => (
+                                        <button
+                                            key={recipe.id}
+                                            onClick={() => handleManualRecipeSelect(day, recipe)}
+                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                            disabled={Object.values(weekPlan).some(r => r && r.id === recipe.id)}
+                                        >
+                                            <span className={Object.values(weekPlan).some(r => r && r.id === recipe.id) ? 'line-through text-gray-400' : ''}>
+                                                {recipe.name}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 p-6 bg-teal-50 rounded-xl border border-teal-100 max-w-4xl mx-auto">
+              <h3 className="font-semibold mb-3 text-sm text-teal-900 flex items-center gap-2">
+                {' '}
+                💡 Slimme functies{' '}
+              </h3>
+              <div className="grid md:grid-cols-2 gap-3 text-xs text-teal-800">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Gedeelde ingrediënten tussen gerechten voor voordeel</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Variatie in koolhydraten (pasta/rijst/aardappel)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Respecteert tijd-, cheat day, kind- en gastvoorkeuren per dag</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Vermijdt ongewenste ingrediënten automatisch</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Export/Import om je recepten en instellingen te bewaren</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Direct delen via WhatsApp met weekplanning</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0"></div>
+                    <span>Voorkomt dat recent bereide gerechten opnieuw worden gekozen.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const container = document.getElementById('root');
+      const root = createRoot(container);
+      root.render(<WeekPlanningApp />);
+    </script>
+  </body>
+</html>
